@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.0.2] - 2026-11-13
+
 ### Added
 
 - Guided `driver-install` with confirmation, pinned package verification,
