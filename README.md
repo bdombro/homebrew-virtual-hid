@@ -51,6 +51,52 @@ Maintain `CHANGELOG.md` under `[Unreleased]`, then use
 See [distribution](docs/distribution.md) for tap setup, upgrades, supported
 binary targets, release prerequisites, and recovery.
 
+## Driver setup (required for live input)
+
+This tool depends on the open-source, Developer ID-signed and Apple-notarized
+[Karabiner-DriverKit-VirtualHIDDevice](https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice)
+driver, pinned to [v8.8.0](https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice/releases/tag/v8.8.0).
+Signing/notarization is not a guarantee of harmlessness.
+
+The guided setup prints the manual instructions, the privileged commands it
+plans to run, and the approvals you must perform. It asks for confirmation
+before requesting sudo:
+
+```sh
+macos-input driver-install --dry-run
+macos-input driver-install
+```
+
+Run it normally, not with sudo; it requests administrator authentication when
+needed. It verifies the pinned package's SHA-256, installs it if missing, and
+configures a root launchd daemon that starts at boot. It reuses a recognized
+existing service and refuses different driver versions or unmanaged daemons.
+It does not send input or bypass macOS approvals. Partial failures are reported;
+completed system changes are not automatically undone.
+
+For manual installation:
+
+1. Download `Karabiner-DriverKit-VirtualHIDDevice-8.8.0.pkg` from the release above.
+   Run `shasum -a 256 Karabiner-DriverKit-VirtualHIDDevice-8.8.0.pkg` and compare
+   with `2b6e323bf690fde05b24ca2648536916a274d01496e3826dc8b050b63f8b9842`.
+2. Open the package and follow Installer's administrator prompts.
+3. Request activation as your normal GUI user:
+   ```sh
+   /Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager activate
+   ```
+4. Approve the driver in the macOS prompts/System Settings. On recent versions,
+   check General > Login Items & Extensions > Driver Extensions; on older
+   versions, check Privacy & Security. Restart if requested.
+5. For manual foreground operation, leave the daemon running in another terminal:
+   ```sh
+   sudo "/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon"
+   ```
+
+**After guided setup, steps 3-4 still apply**, but the daemon is managed by
+launchd rather than a terminal. The command repeats these steps after setup.
+Homebrew prints the same [setup guide](resources/driver-setup.txt) used by the CLI;
+Homebrew itself does not install the driver.
+
 ## Usage
 
 ```sh
@@ -98,8 +144,9 @@ Errors go to stderr and exit nonzero; Ctrl+C exits 130.
 
 Live operation needs the separately installed/approved
 [Karabiner-DriverKit-VirtualHIDDevice](https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice)
-driver and its running root daemon. This CLI never installs, activates or
-starts them. Root is required by that daemon's socket-access policy, not by
+driver and its running root daemon. Only the explicit `driver-install`
+command installs/configures them; input commands never do. Activation and
+approval remain manual. Root is required by that daemon's socket-access policy, not by
 our build or app-launch code. No developer-certificate signing or launchd
 registration is required for this foreground client. Driver signing and
 system-extension approval remain separate requirements.

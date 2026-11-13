@@ -51,6 +51,13 @@ FetchContent_MakeAvailable(karabiner)
 set(autorelease_pool_impl
     "${karabiner_SOURCE_DIR}/vendor/vendor/src/pqrs/osx/autorelease_pool/PQRSOSXAutoreleasePoolImpl.m")
 add_executable(macos-input src/main.cpp "${autorelease_pool_impl}")
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/resources/driver-setup.txt" DRIVER_SETUP_INSTRUCTIONS)
+configure_file(resources/driver-install.sh.in generated/driver-install.sh @ONLY)
+file(READ "${CMAKE_CURRENT_BINARY_DIR}/generated/driver-install.sh" DRIVER_INSTALL_SCRIPT)
+configure_file(resources/driver-setup.hpp.in generated/driver-setup.hpp @ONLY)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/resources/driver-setup.txt")
+target_include_directories(macos-input PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/generated")
 target_compile_definitions(macos-input PRIVATE MACOS_INPUT_VERSION="${PROJECT_VERSION}")
 set_source_files_properties("${autorelease_pool_impl}" PROPERTIES COMPILE_OPTIONS -fno-objc-arc)
 target_include_directories(macos-input SYSTEM PRIVATE
@@ -63,6 +70,7 @@ target_link_libraries(macos-input PRIVATE
 set_target_properties(macos-input PROPERTIES INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 install(TARGETS macos-input RUNTIME DESTINATION bin)
 if(BUILD_TESTING)
+    add_test(NAME driver-script COMMAND bash -n "${CMAKE_CURRENT_BINARY_DIR}/generated/driver-install.sh")
     add_test(NAME cli COMMAND bash "${CMAKE_SOURCE_DIR}/tests/cli.sh"
         "$<TARGET_FILE:macos-input>")
     add_executable(mouse-test tests/mouse.cpp)

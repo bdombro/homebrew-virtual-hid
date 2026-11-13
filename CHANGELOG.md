@@ -6,6 +6,12 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+### Added
+
+- Guided `driver-install` with confirmation, pinned package verification,
+  launchd setup, and explicit manual approval instructions.
+- Shared manual driver setup instructions in Homebrew caveats and CLI help.
+
 ### Fixed
 
 - Refresh the production tap before installing newly published release formulae.

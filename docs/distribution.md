@@ -40,6 +40,21 @@ brew install bdombro/macos-input/macos-input
 brew upgrade bdombro/macos-input/macos-input
 ```
 
+Homebrew caveats print the manual download, verification, installation and
+activation instructions from `resources/driver-setup.txt`, also embedded in the
+executable. For guided setup, run as your normal user:
+
+```sh
+macos-input driver-install --dry-run
+macos-input driver-install
+```
+
+Only this explicit command, after interactive confirmation and sudo, installs
+the pinned driver and configures its persistent root daemon. It leaves GUI
+activation/approval and any requested restart to the user; Homebrew never
+performs these privileged steps. See [driver setup](../README.md#driver-setup-required-for-live-input).
+The formula's no-input tests also exercise the setup preview.
+
 Formulae use ordinary public GitHub downloads without a custom authenticated
 strategy. Archives contain only the executable. Architecture and minimum
 macOS requirements come from the compiled Mach-O binary; a native arm64 build

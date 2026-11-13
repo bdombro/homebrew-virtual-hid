@@ -57,6 +57,8 @@ export async function buildReleaseArchive(path: string): Promise<{ archivePath: 
 }
 
 export function renderFormula(version: string, url: string, sha256: string, target: BinaryTarget): string {
+  const setupInstructions = readFileSync(join(root, "resources", "driver-setup.txt"), "utf8")
+    .trimEnd().split("\n").map((line) => `      ${line}`).join("\n");
   // JSON strings are valid Ruby literals; escape Ruby's interpolation separately.
   const quote = (value: string) => JSON.stringify(value).replaceAll("#{", "\\#{");
   const architecture = target.architecture === "universal"
@@ -86,10 +88,8 @@ ${architecture}
   end
 
   def caveats
-    <<~EOS
-      Live input needs the separately approved Karabiner v8.8.0 driver and its root daemon.
-      This formula does not install or activate the driver, or start a service.
-      Build/install without sudo; only live input needs sudo.
+    <<~'EOS'
+${setupInstructions}
     EOS
   end
 
@@ -97,6 +97,7 @@ ${architecture}
     assert_match "macos-input #{version}", shell_output("#{bin}/${key} --version")
     assert_equal "validated cmd+h\\n", shell_output("#{bin}/${key} --dry-run key cmd+h")
     assert_equal "validated move\\n", shell_output("#{bin}/${key} --dry-run move percent 50 50")
+    assert_match "Source code:", shell_output("#{bin}/${key} driver-install --dry-run")
   end
 end
 `;

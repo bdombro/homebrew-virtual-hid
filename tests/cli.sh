@@ -30,4 +30,23 @@ if printf '\n' | "$binary" --dry-run --stdin >/dev/null 2>&1; then
     echo 'Unexpectedly accepted an empty input line' >&2
     exit 1
 fi
+actual="$("$binary" driver-install --dry-run)"
+[[ "$actual" == *'Source code: https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice'* ]]
+[[ "$actual" == *'/releases/tag/v8.8.0'* && "$actual" == *'/usr/bin/sudo -v'* ]]
+[[ "$actual" == *'Driver activation/approval remains a manual step.'* ]]
+[[ "$actual" == *'Dry run: nothing changed; no sudo or download was attempted.'* ]]
+[[ "$("$binary" --dry-run driver-install)" == "$actual" ]]
+[[ "$("$binary" driver-install --help)" == "$actual" ]]
+[[ "$(BASH_ENV="${BASH_SOURCE[0]}" "$binary" driver-install --dry-run)" == "$actual" ]]
+if "$binary" driver-install </dev/null >/dev/null 2>&1; then
+    echo 'Unexpectedly accepted noninteractive driver installation' >&2
+    exit 1
+fi
+actual="$(printf 'n\n' | "$binary" driver-install)"
+[[ "$actual" == *'Proceed with automatic setup? [y/N]'* ]]
+[[ "$actual" == *'Cancelled; nothing changed.'* ]]
+if printf 'y\n' | "$binary" driver-install >/dev/null 2>&1; then
+    echo 'Unexpectedly accepted piped approval for privileged setup' >&2
+    exit 1
+fi
 echo 'CLI validation and streaming tests passed without keyboard input.'
