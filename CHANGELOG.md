@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.0.1] - 2026-11-13
+
 ### Added
 
 - Virtual-HID keyboard chords and persistent stdin sessions.
