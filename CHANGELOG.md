@@ -11,6 +11,12 @@ All notable changes are documented here, following
 - Guided `driver-install` with confirmation, pinned package verification,
   launchd setup, and explicit manual approval instructions.
 - Shared manual driver setup instructions in Homebrew caveats and CLI help.
+- Pinned Homebrew driver cask, including package removal and driver deactivation.
+
+### Changed
+
+- `driver-install` delegates package download, checksum verification and installation
+  to Homebrew instead of implementing its own installer.
 
 ### Fixed
 

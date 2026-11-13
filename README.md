@@ -10,7 +10,7 @@ src/mouse.hpp                movement parsing, geometry and interpolation
 tests/cli.sh, mouse.cpp      no-input CLI and mouse tests
 CMakeLists.txt, justfile     Debug/Release builds, tests and explicit installation
 VERSION, CHANGELOG.md        application version and release notes
-scripts/, Formula/          Homebrew local install and public release tooling
+scripts/, Formula/, Casks/  Homebrew CLI formula, driver cask and release tooling
 dist/                       ignored compiled executable and release zip
 build/cmake/{Debug,Release}  ignored build output and pinned dependency checkout
 ```
@@ -68,13 +68,26 @@ macos-input driver-install
 ```
 
 Run it normally, not with sudo; it requests administrator authentication when
-needed. It verifies the pinned package's SHA-256, installs it if missing, and
-configures a root launchd daemon that starts at boot. It reuses a recognized
-existing service and refuses different driver versions or unmanaged daemons.
+needed. If the driver is missing, it runs
+`brew install --cask bdombro/macos-input/karabiner-driverkit-virtualhiddevice`
+as your normal user. Homebrew verifies the pinned package's SHA-256 and runs
+macOS Installer; our command configures a root launchd daemon that starts at boot.
+It reuses a recognized existing service and refuses different driver versions
+or unmanaged daemons.
 It does not send input or bypass macOS approvals. Partial failures are reported;
 completed system changes are not automatically undone.
 
-For manual installation:
+You can also install just the package through the cask, then perform activation,
+approval and daemon startup yourself:
+
+```sh
+brew install --cask bdombro/macos-input/karabiner-driverkit-virtualhiddevice
+```
+
+If Homebrew requires explicit trust, follow its instructions to trust only
+this cask with `brew trust --cask bdombro/macos-input/karabiner-driverkit-virtualhiddevice`.
+
+For manual installation without Homebrew:
 
 1. Download `Karabiner-DriverKit-VirtualHIDDevice-8.8.0.pkg` from the release above.
    Run `shasum -a 256 Karabiner-DriverKit-VirtualHIDDevice-8.8.0.pkg` and compare
@@ -95,7 +108,18 @@ For manual installation:
 **After guided setup, steps 3-4 still apply**, but the daemon is managed by
 launchd rather than a terminal. The command repeats these steps after setup.
 Homebrew prints the same [setup guide](resources/driver-setup.txt) used by the CLI;
-Homebrew itself does not install the driver.
+the CLI formula alone does not install the driver. The cask installs the package;
+the guided command also configures the daemon.
+
+To remove a cask-managed driver, run:
+
+```sh
+brew uninstall --cask bdombro/macos-input/karabiner-driverkit-virtualhiddevice
+```
+
+This stops the driver services and requests deactivation as your GUI user before
+removing package files. Do not remove it while another app depends on the driver.
+The cask conflicts with Homebrew's full `karabiner-elements` package.
 
 ## Usage
 
@@ -144,8 +168,8 @@ Errors go to stderr and exit nonzero; Ctrl+C exits 130.
 
 Live operation needs the separately installed/approved
 [Karabiner-DriverKit-VirtualHIDDevice](https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice)
-driver and its running root daemon. Only the explicit `driver-install`
-command installs/configures them; input commands never do. Activation and
+driver and its running root daemon. The cask installs the package, and the explicit
+`driver-install` command also configures the daemon; input commands never do. Activation and
 approval remain manual. Root is required by that daemon's socket-access policy, not by
 our build or app-launch code. No developer-certificate signing or launchd
 registration is required for this foreground client. Driver signing and

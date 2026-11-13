@@ -1,6 +1,6 @@
 # Homebrew distribution
 
-Adapted from argsbarg's Homebrew example: one repository owns `Formula/`,
+Adapted from argsbarg's Homebrew example: one repository owns `Formula/`, `Casks/`,
 local development installs, and GitHub release assets. The application remains
 C++/CMake; Bun runs maintainer scripts directly, without TypeScript
 type-checking or Bun tests.
@@ -49,11 +49,22 @@ macos-input driver-install --dry-run
 macos-input driver-install
 ```
 
-Only this explicit command, after interactive confirmation and sudo, installs
-the pinned driver and configures its persistent root daemon. It leaves GUI
-activation/approval and any requested restart to the user; Homebrew never
-performs these privileged steps. See [driver setup](../README.md#driver-setup-required-for-live-input).
+This command, after interactive confirmation, delegates package installation to
+`brew install --cask bdombro/macos-input/karabiner-driverkit-virtualhiddevice`,
+then configures its persistent root daemon using sudo. Homebrew handles the
+pinned download, checksum verification and privileged package installer.
+Installing the CLI formula alone never installs the cask.
+GUI activation/approval and any requested restart remain manual.
+See [driver setup](../README.md#driver-setup-required-for-live-input).
 The formula's no-input tests also exercise the setup preview.
+
+The checked-in cask uses upstream v8.8.0's signed/notarized package directly.
+It is available through the same local tap link, without formula staging.
+Its uninstall unloads the driver services, requests GUI-user deactivation,
+and removes package-receipt files. It conflicts with the full `karabiner-elements`
+cask because they share driver files. Do not run `brew install --cask` with sudo.
+On Homebrew versions requiring explicit trust, trust only the named cask with
+`brew trust --cask bdombro/macos-input/karabiner-driverkit-virtualhiddevice`.
 
 Formulae use ordinary public GitHub downloads without a custom authenticated
 strategy. Archives contain only the executable. Architecture and minimum

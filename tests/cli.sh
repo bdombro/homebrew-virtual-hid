@@ -33,11 +33,13 @@ fi
 actual="$("$binary" driver-install --dry-run)"
 [[ "$actual" == *'Source code: https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice'* ]]
 [[ "$actual" == *'/releases/tag/v8.8.0'* && "$actual" == *'/usr/bin/sudo -v'* ]]
+[[ "$actual" == *'brew install --cask bdombro/macos-input/karabiner-driverkit-virtualhiddevice'* ]]
 [[ "$actual" == *'Driver activation/approval remains a manual step.'* ]]
 [[ "$actual" == *'Dry run: nothing changed; no sudo or download was attempted.'* ]]
 [[ "$("$binary" --dry-run driver-install)" == "$actual" ]]
 [[ "$("$binary" driver-install --help)" == "$actual" ]]
 [[ "$(BASH_ENV="${BASH_SOURCE[0]}" "$binary" driver-install --dry-run)" == "$actual" ]]
+[[ "$(PATH=/usr/bin:/bin:/usr/sbin:/sbin "$binary" driver-install --dry-run)" == "$actual" ]]
 if "$binary" driver-install </dev/null >/dev/null 2>&1; then
     echo 'Unexpectedly accepted noninteractive driver installation' >&2
     exit 1

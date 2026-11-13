@@ -10,6 +10,7 @@ service_file="/Library/LaunchDaemons/$label.plist"
 daemon='/Library/Application Support/org.pqrs/Karabiner-DriverKit-VirtualHIDDevice/Applications/Karabiner-VirtualHIDDevice-Daemon.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Daemon'
 socket='/Library/Application Support/org.pqrs/tmp/rootonly/karabiner_virtual_hid_device_service.sock'
 package_id=org.pqrs.Karabiner-DriverKit-VirtualHIDDevice
+cask=bdombro/macos-input/karabiner-driverkit-virtualhiddevice
 
 manual_steps() {
     /bin/cat <<'MANUAL_STEPS'
@@ -27,14 +28,14 @@ MANUAL_STEPS
 /bin/cat <<'PLAN'
 
 Automatic setup will:
-  - Request administrator authentication: /usr/bin/sudo -v
-  - Download the pinned v8.8.0 package with /usr/bin/curl into a private
-    temporary directory and verify the SHA-256 above with /usr/bin/shasum.
-  - If the driver is missing, run:
-      sudo /usr/sbin/installer -pkg <verified-package> -target /
+  - If the driver is missing, run Homebrew as your normal user:
+      brew install --cask bdombro/macos-input/karabiner-driverkit-virtualhiddevice
+    The cask pins v8.8.0. Homebrew downloads/verifies the package and runs
+    macOS Installer, requesting administrator authentication as needed.
     A different installed version will NOT be overwritten or downgraded.
   - Reuse the official Karabiner launchd service if it exists. Otherwise,
     configure our own root daemon using:
+      /usr/bin/sudo -v
       sudo /usr/bin/install -o root -g wheel -m 0644 <service-plist> /Library/LaunchDaemons/com.bdombro.macos-input.driver.plist
       sudo /bin/launchctl bootstrap system /Library/LaunchDaemons/com.bdombro.macos-input.driver.plist
     The plist runs the installed Karabiner daemon at boot and keeps it alive.
@@ -66,11 +67,10 @@ if [[ ! -t 0 ]]; then
     exit 1
 fi
 
-/usr/bin/sudo -v
 work="$(/usr/bin/mktemp -d /private/tmp/macos-input-driver.XXXXXX)"
 cleanup() {
     status=$?
-    if ! /bin/rm -f -- "$work/driver.pkg" "$work/service.plist" "$work/status"; then
+    if ! /bin/rm -f -- "$work/service.plist" "$work/status"; then
         printf 'Cannot remove temporary setup files in %s\n' "$work" >&2
         status=1
     elif ! /bin/rmdir -- "$work"; then
@@ -83,30 +83,40 @@ trap cleanup EXIT
 trap 'exit 130' INT TERM
 trap 'printf "Driver setup failed; completed installation steps are not rolled back.\n" >&2' ERR
 
-receipts="$(/usr/sbin/pkgutil --pkgs)"
-if printf '%s\n' "$receipts" | /usr/bin/grep -Fx "$package_id" >/dev/null; then
+verify_driver() {
+    local version
     version="$(/usr/sbin/pkgutil --pkg-info "$package_id" | /usr/bin/awk '$1 == "version:" { print $2 }')"
     if [[ "$version" != 8.8.0 ]]; then
-        printf 'Driver version %s is already installed. Refusing to replace it with 8.8.0.\n' "$version" >&2
+        printf 'Expected driver v8.8.0; found version %s. Refusing to replace or use it.\n' "$version" >&2
         exit 1
     fi
     if [[ ! -x "$daemon" ]]; then
         printf 'The v8.8.0 receipt exists but its daemon is missing. Repair the driver manually.\n' >&2
         exit 1
     fi
+}
+
+receipts="$(/usr/sbin/pkgutil --pkgs)"
+if printf '%s\n' "$receipts" | /usr/bin/grep -Fx "$package_id" >/dev/null; then
+    verify_driver
     printf 'Driver v8.8.0 is already installed; leaving its files unchanged.\n'
 else
     if [[ -e "$daemon" || -e /Applications/.Karabiner-VirtualHIDDevice-Manager.app ]]; then
         printf 'Unrecognized driver installation found; refusing to overwrite it.\n' >&2
         exit 1
     fi
-    /usr/bin/curl --fail --location --proto '=https' --proto-redir '=https' \
-        --output "$work/driver.pkg" \
-        'https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice/releases/download/v8.8.0/Karabiner-DriverKit-VirtualHIDDevice-8.8.0.pkg'
-    printf '%s  %s\n' '2b6e323bf690fde05b24ca2648536916a274d01496e3826dc8b050b63f8b9842' \
-        "$work/driver.pkg" | /usr/bin/shasum -a 256 -c -
-    /usr/bin/sudo /usr/sbin/installer -pkg "$work/driver.pkg" -target /
+    if [[ "$EUID" == 0 ]]; then
+        printf 'Run macos-input driver-install without sudo; Homebrew requests administrator access when needed.\n' >&2
+        exit 1
+    fi
+    if ! command -v brew >/dev/null; then
+        printf 'Homebrew is required to install the driver cask. Install Homebrew or follow the manual package instructions above.\n' >&2
+        exit 1
+    fi
+    brew install --cask "$cask"
+    verify_driver
 fi
+/usr/bin/sudo -v
 
 service_loaded() {
     if /usr/bin/sudo /bin/launchctl print "system/$1" >"$work/status" 2>&1; then
