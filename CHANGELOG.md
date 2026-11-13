@@ -12,3 +12,7 @@ All notable changes are documented here, following
 - Relative, absolute, and display-percentage mouse movement with optional smoothing.
 - Homebrew local installation and public GitHub release tooling.
 - Explicit macOS 13.0 deployment target without newer floating-point parsing APIs.
+
+### Fixed
+
+- Release checks run only the C++ suites, without TypeScript type-checking or Bun tests.

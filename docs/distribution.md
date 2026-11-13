@@ -2,7 +2,8 @@
 
 Adapted from argsbarg's Homebrew example: one repository owns `Formula/`,
 local development installs, and GitHub release assets. The application remains
-C++/CMake; Bun and its TypeScript dependencies are maintainer-only.
+C++/CMake; Bun runs maintainer scripts directly, without TypeScript
+type-checking or Bun tests.
 
 ## Local development
 
@@ -68,7 +69,7 @@ just release minor
 
 The dry-run is offline and changes nothing. A real release asks for confirmation
 (or requires `--yes` outside a terminal), requires a clean app working tree,
-checks the repository and tag, and runs all tests. It bumps `VERSION`, promotes
+checks the repository and tag, and runs the C++ tests. It bumps `VERSION`, promotes
 Unreleased to a dated changelog section, builds the binary, creates
 `dist/macos-input.zip`, and writes the release formula with its SHA-256.
 It commits only the version, changelog, and formula, then tags, atomically

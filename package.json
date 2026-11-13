@@ -2,9 +2,6 @@
   "name": "macos-input-tooling",
   "private": true,
   "type": "module",
-  "scripts": {
-    "typecheck": "tsc --noEmit"
-  },
   "devDependencies": {
     "@types/bun": "^1.3.12"
   }

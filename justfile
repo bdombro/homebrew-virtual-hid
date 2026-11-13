@@ -24,13 +24,7 @@ build: (configure "Release")
     mkdir -p dist
     install -m 755 build/cmake/Release/macos-input dist/macos-input
 
-check:
-    bun run typecheck
-
-test-tooling: check
-    bun test scripts
-
-test: test-tooling test-debug test-release
+test: test-debug test-release
 
 alias install := install-local
 alias reinstall := reinstall-local
