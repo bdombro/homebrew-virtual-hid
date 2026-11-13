@@ -25,7 +25,7 @@ After a killed process, use `bun scripts/dev-formula.ts reset` if a backup remai
 `reinstall-local` replaces the installed executable for quick development.
 `uninstall` removes the keg but leaves the tap; untap separately if desired.
 `install-production` switches our local tap symlink to the public GitHub tap
-and installs/reinstalls its release formula.
+and fast-forwards that tap before installing/reinstalling its release formula.
 
 No recipe installs Karabiner, grants permissions, starts a daemon, or emits
 keyboard/mouse input. Do not run builds or Homebrew with sudo.

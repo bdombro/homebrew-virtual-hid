@@ -6,6 +6,10 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+### Fixed
+
+- Refresh the production tap before installing newly published release formulae.
+
 ## [0.0.1] - 2026-11-13
 
 ### Added

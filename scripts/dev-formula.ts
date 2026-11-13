@@ -92,6 +92,7 @@ async function main(): Promise<void> {
       const path = await localTapPath();
       if (isLocalTap(path)) unlinkSync(path);
       await $`brew tap ${tap} ${`https://github.com/${releaseRepo}.git`}`;
+      await $`git -C ${path} pull --ff-only`;
       await installFormula();
       break;
     }
