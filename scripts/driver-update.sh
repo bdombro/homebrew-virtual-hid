@@ -23,5 +23,5 @@ sed -i '' -e "s/^  version \".*\"$/  version \"$version\"/" -e "s/^  sha256 \".*
 sed -i '' "s/GIT_TAG [0-9a-f]\{40\}/GIT_TAG $commit/" "$cmake"
 
 echo "Driver $current -> $version (commit $commit)"
-echo "Review upstream's changes, run just test, and update docs that mention $current:"
+echo "Docs that mention $current:"
 git grep -l -F "$current" -- . ':!Casks' || true

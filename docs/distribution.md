@@ -85,10 +85,8 @@ just driver-update
 ```
 
 Pins the cask to upstream's latest release (version and package SHA-256) and
-`clients/macos-input/CMakeLists.txt` to that release's commit, so the CLI
-speaks the same protocol as the daemon. It lists docs that still mention the
-old version. Review upstream's changes and run `just test`, then release
-`macos-input` so its binary matches the new driver.
+`clients/macos-input/CMakeLists.txt` to that release's commit, and lists docs
+that still mention the old version.
 
 ## Releases and changelog
 
