@@ -47,6 +47,14 @@ cask "virtual-hid-driver" do
         must_succeed: false,
         print_stdout: true
 
+    # Register the virtual keyboard (product-vendor-country: 0x27db, 0x16c0, US) as ANSI so
+    # macOS doesn't open Keyboard Setup Assistant each time a client attaches it.
+    run "/usr/bin/defaults",
+        args:         ["write", "/Library/Preferences/com.apple.keyboardtype", "keyboardtype",
+                       "-dict-add", "10203-5824-33", "-int", "40"],
+        sudo:         true,
+        must_succeed: false
+
     write_file "com.github.bdombro.virtual-hid-driver.daemon.plist", <<~XML
       <?xml version="1.0" encoding="UTF-8"?>
       <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

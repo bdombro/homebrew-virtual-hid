@@ -23,7 +23,9 @@ All notable changes are documented here, following
 
 - Live input no longer times out after the first report ("Timed out waiting
   for the driver daemon"), which left a key held down.
-- The virtual keyboard reports a US country code so macOS can identify it.
+- Keyboard Setup Assistant no longer opens on every command: the virtual
+  keyboard reports a US country code, and the `virtual-hid-driver` cask
+  registers it as an ANSI keyboard.
 - Migration: run `brew uninstall macos-input`, `brew trust bdombro/macos-input`
   (newer Homebrew refuses to touch casks from untrusted taps),
   `brew uninstall --cask karabiner-driverkit-virtualhiddevice`, then
