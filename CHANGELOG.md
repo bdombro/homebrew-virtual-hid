@@ -6,6 +6,29 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+### Changed
+
+- Renamed the GitHub repository to `homebrew-virtual-hid`; the tap is
+  `bdombro/virtual-hid`.
+- The `macos-input` formula is CLI-only, with no Homebrew service; its caveats
+  show driver setup only while the driver is missing.
+- New `virtual-hid-driver` cask installs the driver package, requests
+  activation, and installs its own root LaunchDaemon.
+- Live commands exit non-zero with setup text when the driver is missing.
+- New just recipes: `install-local`, `install-github`, `uninstall`, `status`,
+  `driver-start`, `driver-stop` and `driver-restart`.
+- Installs no longer run tests automatically.
+- Migration: run `brew uninstall macos-input`,
+  `brew uninstall --cask karabiner-driverkit-virtualhiddevice`, then
+  `brew untap bdombro/macos-input`, then the new install commands from the README.
+
+### Removed
+
+- Embedded `driver-install` command, shell templates, build generation and
+  installer-only tests. Use the `virtual-hid-driver` cask instead.
+- `scripts/dev-formula.ts` and the `install`/`reinstall` aliases,
+  `reinstall-local` and `install-production` recipes.
+
 ## [0.0.2] - 2026-11-13
 
 ### Added

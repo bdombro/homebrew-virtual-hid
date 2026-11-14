@@ -1,4 +1,0 @@
-#pragma once
-namespace macos_input {
-inline constexpr char driver_install_script[] = R"driver_setup(@DRIVER_INSTALL_SCRIPT@)driver_setup";
-}

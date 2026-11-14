@@ -11,60 +11,54 @@ type-checking or Bun tests.
 just setup
 just test
 just install-local
-just reinstall-local
+just install-github
+just status
 just uninstall
 ```
 
-`install` and `reinstall` alias their local variants. `install-local` builds
-`dist/macos-input`, packages it as a zip, and links this checkout as the
-`bdombro/macos-input` tap. It temporarily writes a `file://` formula, installs
-or reinstalls the keg, runs its no-input tests, and restores the original
-formula even if Homebrew fails. It refuses to overwrite an existing tap.
-After a killed process, use `bun scripts/dev-formula.ts reset` if a backup remains.
+`install-local` links this checkout as the `bdombro/virtual-hid` tap and
+installs its cask and formula, but the formula downloads the latest released
+CLI binary, not `dist/`. `install-github` taps GitHub main exactly as users do.
+Both first run `uninstall`, which removes `macos-input`, the
+`virtual-hid-driver` cask and the tap directory
+`$(brew --repository)/Library/Taps/bdombro/homebrew-virtual-hid` (a symlink for
+`install-local`, a clone for `install-github`).
 
-`reinstall-local` replaces the installed executable for quick development.
-`uninstall` removes the keg but leaves the tap; untap separately if desired.
-`install-production` switches our local tap symlink to the public GitHub tap
-and fast-forwards that tap before installing/reinstalling its release formula.
+`status` shows driver activation state and whether the root daemon is loaded.
+`driver-start` enables and bootstraps the
+`com.github.bdombro.virtual-hid-driver.daemon` LaunchDaemon, `driver-stop`
+disables and boots it out, and `driver-restart` kickstarts it. `status` and the
+`driver-*` recipes run `sudo launchctl` and prompt for a password.
 
-No recipe installs Karabiner, grants permissions, starts a daemon, or emits
-keyboard/mouse input. Do not run builds or Homebrew with sudo.
+Installs never run tests; run `just test` or
+`brew test bdombro/virtual-hid/macos-input` explicitly. Never run builds or
+`brew install` with sudo.
 
 ## Public installation
 
-After the first release has been published:
-
 ```sh
-brew tap bdombro/macos-input https://github.com/bdombro/macos-input.git
-brew install bdombro/macos-input/macos-input
-brew upgrade bdombro/macos-input/macos-input
+brew tap bdombro/virtual-hid
+brew trust bdombro/virtual-hid
+brew install --cask virtual-hid-driver
+brew install macos-input
+brew upgrade macos-input
 ```
 
-Homebrew caveats print the manual download, verification, installation and
-activation instructions from `resources/driver-setup.txt`, also embedded in the
-executable. For guided setup, run as your normal user:
+The formula is CLI-only. Its caveats print `resources/driver-setup.txt` only
+while the Manager app is missing; otherwise they say "Live input commands
+require sudo."
 
-```sh
-macos-input driver-install --dry-run
-macos-input driver-install
-```
+The `virtual-hid-driver` cask installs upstream v8.8.0's signed and notarized
+package, requests activation, and installs and starts its own root
+LaunchDaemon `com.github.bdombro.virtual-hid-driver.daemon` (not a Homebrew service).
+Approval stays manual; see
+[driver setup](../README.md#driver-setup-required-for-live-input). The cask's
+uninstall unloads that daemon, requests deactivation, removes the package files
+and deletes the plist. It conflicts with the `karabiner-elements` cask. Do not
+run `brew install --cask` with sudo.
 
-This command, after interactive confirmation, delegates package installation to
-`brew install --cask bdombro/macos-input/karabiner-driverkit-virtualhiddevice`,
-then configures its persistent root daemon using sudo. Homebrew handles the
-pinned download, checksum verification and privileged package installer.
-Installing the CLI formula alone never installs the cask.
-GUI activation/approval and any requested restart remain manual.
-See [driver setup](../README.md#driver-setup-required-for-live-input).
-The formula's no-input tests also exercise the setup preview.
-
-The checked-in cask uses upstream v8.8.0's signed/notarized package directly.
-It is available through the same local tap link, without formula staging.
-Its uninstall unloads the driver services, requests GUI-user deactivation,
-and removes package-receipt files. It conflicts with the full `karabiner-elements`
-cask because they share driver files. Do not run `brew install --cask` with sudo.
-On Homebrew versions requiring explicit trust, trust only the named cask with
-`brew trust --cask bdombro/macos-input/karabiner-driverkit-virtualhiddevice`.
+Migrating from the old tap: follow
+[Migrating from the old tap](../README.md#migrating-from-the-old-tap) in the README.
 
 Formulae use ordinary public GitHub downloads without a custom authenticated
 strategy. Archives contain only the executable. Architecture and minimum
@@ -85,7 +79,7 @@ it in `macos-input --version`. Write user-facing changes under
 `## [Unreleased]` in `CHANGELOG.md`.
 
 Once the independent app repository has an initial commit and an `origin`
-pointing to the public `bdombro/macos-input` repository:
+pointing to the public `bdombro/homebrew-virtual-hid` repository:
 
 ```sh
 just release minor --dry-run
@@ -102,8 +96,9 @@ It commits only the version, changelog, and formula, then tags, atomically
 pushes the branch and tag, and publishes the zip using the changelog as notes.
 
 Requires authenticated `gh`, push access to `origin`, and an existing GitHub
-repository. This tooling does not create that repository. `Formula/` has no
-production formula until the first release; no placeholder URL/hash is shipped.
+repository. This tooling does not create that repository. The checked-in release
+formula retains its published asset URL/hash when caveats
+change; new CLI code reaches public installations only with a new binary release.
 Old releases are retained.
 
 Failures stop immediately and leave completed work visible rather than

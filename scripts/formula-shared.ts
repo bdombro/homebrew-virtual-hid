@@ -4,9 +4,8 @@ import { join } from "node:path";
 import { $ } from "bun";
 
 export const key = "macos-input";
-export const releaseRepo = "bdombro/macos-input";
-export const tap = releaseRepo;
-export const formulaName = `${tap}/${key}`;
+export const releaseRepo = "bdombro/homebrew-virtual-hid";
+export const managerAppPath = "/Applications/.Karabiner-VirtualHIDDevice-Manager.app";
 export const root = join(import.meta.dir, "..");
 export const binaryPath = join(root, "dist", key);
 export const formulaPath = join(root, "Formula", `${key}.rb`);
@@ -32,8 +31,15 @@ export function readVersion(): string {
   return version;
 }
 
+export async function runCommand(description: string, command: $.ShellPromise) {
+  console.log(`==> ${description}`);
+  return await command.quiet(false);
+}
+
 export async function readBinaryTarget(path: string): Promise<BinaryTarget> {
-  const architectures = (await $`xcrun lipo -archs ${path}`.quiet().text()).trim().split(/\s+/);
+  const architectures = (await runCommand(
+    `xcrun lipo -archs ${path}`, $`xcrun lipo -archs ${path}`,
+  )).stdout.toString().trim().split(/\s+/);
   let architecture: BinaryTarget["architecture"];
   if (architectures.length === 1 && architectures[0] === "arm64") architecture = "arm64";
   else if (architectures.length === 1 && architectures[0] === "x86_64") architecture = "x86_64";
@@ -41,7 +47,9 @@ export async function readBinaryTarget(path: string): Promise<BinaryTarget> {
     architecture = "universal";
   } else throw new Error(`Unsupported binary architectures: ${architectures.join(", ")}`);
 
-  const build = await $`xcrun vtool -show-build ${path}`.quiet().text();
+  const build = (await runCommand(
+    `xcrun vtool -show-build ${path}`, $`xcrun vtool -show-build ${path}`,
+  )).stdout.toString();
   const versions = [...build.matchAll(/^\s+minos (\d+\.\d+(?:\.\d+)?)\s*$/gm)].map((match) => match[1]);
   if (!versions.length) throw new Error("Cannot determine the binary's minimum macOS version.");
   versions.sort((a, b) => a.localeCompare(b, "en", { numeric: true }));
@@ -50,15 +58,18 @@ export async function readBinaryTarget(path: string): Promise<BinaryTarget> {
 
 export async function buildReleaseArchive(path: string): Promise<{ archivePath: string; sha256: string }> {
   const archivePath = `${path}.zip`;
-  if (existsSync(archivePath)) unlinkSync(archivePath);
-  await $`zip -j -9 ${archivePath} ${path}`.quiet();
+  if (existsSync(archivePath)) {
+    console.log(`==> Removing existing archive ${archivePath}`);
+    unlinkSync(archivePath);
+  }
+  await runCommand(`zip -j -9 ${archivePath} ${path}`, $`zip -j -9 ${archivePath} ${path}`);
   const sha256 = createHash("sha256").update(readFileSync(archivePath)).digest("hex");
   return { archivePath, sha256 };
 }
 
 export function renderFormula(version: string, url: string, sha256: string, target: BinaryTarget): string {
   const setupInstructions = readFileSync(join(root, "resources", "driver-setup.txt"), "utf8")
-    .trimEnd().split("\n").map((line) => `      ${line}`).join("\n");
+    .trimEnd().split("\n").map((line) => line ? `      ${line}` : "").join("\n");
   // JSON strings are valid Ruby literals; escape Ruby's interpolation separately.
   const quote = (value: string) => JSON.stringify(value).replaceAll("#{", "\\#{");
   const architecture = target.architecture === "universal"
@@ -88,6 +99,8 @@ ${architecture}
   end
 
   def caveats
+    return "Live input commands require sudo." if File.exist?("${managerAppPath}")
+
     <<~'EOS'
 ${setupInstructions}
     EOS
@@ -97,7 +110,6 @@ ${setupInstructions}
     assert_match "macos-input #{version}", shell_output("#{bin}/${key} --version")
     assert_equal "validated cmd+h\\n", shell_output("#{bin}/${key} --dry-run key cmd+h")
     assert_equal "validated move\\n", shell_output("#{bin}/${key} --dry-run move percent 50 50")
-    assert_match "Source code:", shell_output("#{bin}/${key} driver-install --dry-run")
   end
 end
 `;

@@ -1,24 +1,19 @@
-#include "driver-setup.hpp"
+#include "driver_setup.hpp"
 #include "mouse.hpp"
 #include <CoreGraphics/CoreGraphics.h>
-#include <cerrno>
 #include <chrono>
 #include <condition_variable>
-#include <crt_externs.h>
 #include <csignal>
 #include <iostream>
 #include <map>
 #include <mutex>
 #include <optional>
-#include <spawn.h>
 #include <pqrs/karabiner/driverkit/virtual_hid_device_service.hpp>
 #include <pqrs/osx/autorelease_pool.hpp>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <sys/stat.h>
-#include <sys/wait.h>
-#include <system_error>
 #include <thread>
 #include <unistd.h>
 #include <vector>
@@ -309,29 +304,6 @@ void move_pointer(Device& device, const Move& move) {
             gain.y = std::clamp(std::abs((after.y - current.y) / step.y), 0.25, 16.0);
     }
 }
-int driver_install(bool dry_run) {
-    // Ignore shell startup files and exported functions during setup.
-    std::vector<std::string> arguments{
-        "/bin/bash", "--noprofile", "--norc", "-p", "-c",
-        macos_input::driver_install_script, "macos-input driver-install",
-        dry_run ? "--dry-run" : "--install"};
-    std::vector<char*> argv;
-    for (auto& argument : arguments)
-        argv.push_back(argument.data());
-    argv.push_back(nullptr);
-    pid_t pid;
-    const int error = posix_spawn(&pid, argv[0], nullptr, nullptr, argv.data(), *_NSGetEnviron());
-    if (error)
-        throw std::runtime_error("Cannot start driver setup: " +
-                                 std::generic_category().message(error));
-    int status;
-    while (waitpid(pid, &status, 0) < 0) {
-        if (errno != EINTR)
-            throw std::runtime_error("Cannot wait for driver setup: " +
-                                     std::generic_category().message(errno));
-    }
-    return WIFEXITED(status) ? WEXITSTATUS(status) : 128 + WTERMSIG(status);
-}
 } // namespace
 
 int main(int argc, char** argv) {
@@ -346,14 +318,11 @@ int main(int argc, char** argv) {
         for (int i = 1; i < argc; ++i) {
             const std::string arg = argv[i];
             if (arg == "--help" || arg == "-h") {
-                if (argc > 1 && std::string(argv[1]) == "driver-install")
-                    return driver_install(true);
                 std::cout
                     << "Usage: macos-input [--dry-run] key CHORD [CHORD ...]\n"
                        "       macos-input [--dry-run] move relative|absolute|percent X Y "
                        "[--smooth SECONDS]\n"
                        "       macos-input [--dry-run] --stdin\n"
-                       "       macos-input driver-install [--dry-run]\n"
                        "       macos-input --version\n"
                        "Keys: lowercase letters/digits, cmd/ctrl/shift/alt/option modifiers,\n"
                        "enter, escape, backspace, tab, space, punctuation names and arrow keys.\n"
@@ -365,7 +334,7 @@ int main(int argc, char** argv) {
                        "after 5 seconds of correction; no native cursor-warp fallback.\n"
                        "--stdin: persistent devices; prints ready, then ok per command line.\n"
                        "--dry-run: validates syntax only; no root, driver, screen reads or input.\n"
-                       "Live input requires root and the active Karabiner v8.8.0 driver/daemon.\n";
+                       "Live input requires root, the virtual-hid-driver cask and its daemon.\n";
                 return 0;
             } else if (arg == "--dry-run") {
                 dry_run = true;
@@ -378,8 +347,6 @@ int main(int argc, char** argv) {
         if (from_stdin ? !args.empty() : args.empty()) {
             throw std::runtime_error("Supply a command or --stdin; see --help");
         }
-        if (!from_stdin && args.size() == 1 && args[0] == "driver-install")
-            return driver_install(dry_run);
         std::optional<Command> command;
         if (!from_stdin)
             command = parse_command(args);
@@ -392,15 +359,24 @@ int main(int argc, char** argv) {
         }
         std::unique_ptr<Device> device;
         if (!dry_run) {
+            struct stat status{};
+            if (stat("/Applications/.Karabiner-VirtualHIDDevice-Manager.app", &status)) {
+                std::cerr << "macos-input: virtual HID driver is not installed.\n\n"
+                          << driver_setup_text;
+                return 1;
+            }
             if (geteuid() != 0)
                 throw std::runtime_error("Run live input with sudo");
-            struct stat status{};
             if (lstat("/Library/Application Support/org.pqrs/tmp/rootonly/"
                       "karabiner_virtual_hid_device_service.sock",
                       &status) ||
                 !S_ISSOCK(status.st_mode)) {
-                throw std::runtime_error("Driver daemon socket missing; install/activate the "
-                                         "driver and start its daemon");
+                throw std::runtime_error(
+                    "Driver daemon socket missing: the driver is not approved or its daemon "
+                    "is not running.\nCheck: sudo launchctl print "
+                    "system/com.github.bdombro.virtual-hid-driver.daemon\n"
+                    "Setup steps:\n" +
+                    std::string(driver_setup_text));
             }
             device = std::make_unique<Device>(from_stdin || !command->move,
                                               from_stdin || command->move.has_value());
