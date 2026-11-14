@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-14
+
 ### Changed
 
 - Renamed the GitHub repository to `homebrew-virtual-hid`; the tap is
