@@ -6,6 +6,11 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+### Added
+
+- `macos-input sudoer grant` / `sudoer revoke` manage a passwordless sudo rule
+  for `macos-input`, pinned to the binary's SHA-256. `just uninstall` removes it.
+
 ### Changed
 
 - Uninstalling `virtual-hid-driver` removes its keyboard-type registration.

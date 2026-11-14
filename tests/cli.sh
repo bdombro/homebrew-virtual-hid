@@ -30,4 +30,26 @@ if printf '\n' | "$binary" --dry-run --stdin >/dev/null 2>&1; then
     echo 'Unexpectedly accepted an empty input line' >&2
     exit 1
 fi
+rule="$("$binary" --dry-run sudoer grant --user "$(id -un)")"
+binary_path="$(cd "$(dirname "$binary")" && pwd -P)/$(basename "$binary")"
+digest="$(shasum -a 256 "$binary_path" | cut -d' ' -f1)"
+grep -qxF "$(id -un) ALL=(root) NOPASSWD: sha256:$digest $binary_path" <<<"$rule"
+[[ "$("$binary" --dry-run sudoer grant)" == "$rule" ]]
+[[ "$("$binary" --dry-run sudoer revoke)" == 'would remove /private/etc/sudoers.d/macos-input' ]]
+if [[ "$(id -u)" != 0 ]]; then
+    for command in grant revoke; do
+        if "$binary" sudoer "$command" >/dev/null 2>&1; then
+            echo "Unexpectedly ran $command without root" >&2
+            exit 1
+        fi
+    done
+fi
+for bad in 'sudoer grant --user' 'sudoer grant --user root' 'sudoer grant --user no-such-user-xyz' \
+    'sudoer grant --user a,b' 'sudoer revoke extra' 'sudoer' 'sudoer list'; do
+    # shellcheck disable=SC2086
+    if "$binary" --dry-run $bad >/dev/null 2>&1; then
+        printf 'Unexpectedly accepted: %s\n' "$bad" >&2
+        exit 1
+    fi
+done
 echo 'CLI validation and streaming tests passed without keyboard input.'

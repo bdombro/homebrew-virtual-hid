@@ -126,6 +126,19 @@ All emitted movement uses the driver. CoreGraphics only reads cursor/display geo
 
 `--stdin` keeps virtual devices alive until EOF/Ctrl+C, prints `ready`, and accepts one command per line (for example `key cmd+h` or `move percent 50 50`). It prints `ok` after each chord's press/release responses or completed move; this does not prove a foreground app handled the input. `--dry-run` validates syntax without root, driver, screen reads or input. Errors go to stderr and exit nonzero; Ctrl+C exits 130.
 
+### Using sudo without a password
+
+Live input needs root because the driver daemon's socket is root-only. To skip the password prompt, grant yourself a passwordless sudo rule for `macos-input` only:
+
+```sh
+sudo macos-input sudoer grant          # rule for the user who ran sudo
+sudo macos-input sudoer grant --user NAME
+macos-input --dry-run sudoer grant     # print the rule without changing anything
+sudo macos-input sudoer revoke         # remove it
+```
+
+This writes `/etc/sudoers.d/macos-input`, checked with `visudo` before it takes effect. You still type `sudo macos-input …`, but without a password. The rule is pinned to the binary's SHA-256 because Homebrew's directories are writable by your user: a plain rule would let any program running as you swap the file and get passwordless root. After `brew upgrade macos-input`, sudo asks for a password again until you rerun `sudo macos-input sudoer grant`. `just uninstall` removes the rule; `brew uninstall` alone does not.
+
 ## Driver and permissions
 
 Live operation needs the separately installed/approved [Karabiner-DriverKit-VirtualHIDDevice](https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice) driver and its running root daemon. The cask installs the package and owns the root daemon. Approval remains manual. Root is required by that daemon's socket-access policy, not by our build or app-launch code. No developer-certificate signing or launchd registration is required for this foreground client. Driver signing and system-extension approval remain separate requirements.
