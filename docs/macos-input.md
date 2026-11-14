@@ -65,12 +65,13 @@ See [distribution](distribution.md) for local Homebrew installs, just recipes an
 ### Layout
 
 ```text
-src/main.cpp                  CLI, virtual devices and cursor-feedback movement
-src/mouse.hpp                 movement parsing, geometry and interpolation
-tests/cli.sh, mouse.cpp       no-input CLI and mouse tests
-CMakeLists.txt, justfile      Debug/Release builds, tests and explicit installation
-VERSION, CHANGELOG.md         application version and release notes
-scripts/, Formula/, Casks/    Homebrew CLI formula, driver cask and release tooling
-dist/                         ignored compiled executable and release zip
-build/cmake/{Debug,Release}   ignored build output and pinned dependency checkout
+clients/macos-input/src/main.cpp            CLI, virtual devices and cursor-feedback movement
+clients/macos-input/src/mouse.hpp           movement parsing, geometry and interpolation
+clients/macos-input/tests/cli.sh, mouse.cpp  no-input CLI and mouse tests
+CMakeLists.txt, justfile                    Debug/Release builds, tests and explicit installation
+VERSION, CHANGELOG.md                       application version and release notes
+scripts/, Formula/, Casks/                  Homebrew CLI formula, driver cask and release tooling
+dist/                                       ignored compiled executable and release zip
+resources/driver-setup.txt                  driver setup guide shared by the CLI and formula
+build/cmake/{Debug,Release}                 ignored build output and pinned dependency checkout
 ```

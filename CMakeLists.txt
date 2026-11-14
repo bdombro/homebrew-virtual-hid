@@ -50,7 +50,7 @@ FetchContent_Declare(karabiner
 FetchContent_MakeAvailable(karabiner)
 set(autorelease_pool_impl
     "${karabiner_SOURCE_DIR}/vendor/vendor/src/pqrs/osx/autorelease_pool/PQRSOSXAutoreleasePoolImpl.m")
-add_executable(macos-input src/main.cpp "${autorelease_pool_impl}")
+add_executable(macos-input clients/macos-input/src/main.cpp "${autorelease_pool_impl}")
 # Embed resources/driver-setup.txt (the single source for setup text) as a raw string.
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/resources/driver-setup.txt")
@@ -71,10 +71,10 @@ target_link_libraries(macos-input PRIVATE
 set_target_properties(macos-input PROPERTIES INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
 install(TARGETS macos-input RUNTIME DESTINATION bin)
 if(BUILD_TESTING)
-    add_test(NAME cli COMMAND bash "${CMAKE_SOURCE_DIR}/tests/cli.sh"
+    add_test(NAME cli COMMAND bash "${CMAKE_SOURCE_DIR}/clients/macos-input/tests/cli.sh"
         "$<TARGET_FILE:macos-input>")
-    add_executable(mouse-test tests/mouse.cpp)
-    target_include_directories(mouse-test PRIVATE src)
+    add_executable(mouse-test clients/macos-input/tests/mouse.cpp)
+    target_include_directories(mouse-test PRIVATE clients/macos-input/src)
     target_link_libraries(mouse-test PRIVATE app_options)
     set_target_properties(mouse-test PROPERTIES INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
     add_test(NAME mouse COMMAND mouse-test)
