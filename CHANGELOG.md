@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-14
+
 ### Added
 
 - Live input works without sudo for members of the `virtual-hid` group. The

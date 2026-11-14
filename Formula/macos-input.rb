@@ -1,9 +1,9 @@
 class MacosInput < Formula
   desc "Send keyboard and mouse input through Karabiner's virtual HID driver"
   homepage "https://github.com/bdombro/homebrew-virtual-hid"
-  url "https://github.com/bdombro/homebrew-virtual-hid/releases/download/v0.1.0/macos-input.zip"
-  version "0.1.0"
-  sha256 "d5add46b35752d3894906bdb7331a1964d2d0f962158dd65bcc23b09fafc3e80"
+  url "https://github.com/bdombro/homebrew-virtual-hid/releases/download/v0.1.1/macos-input.zip"
+  version "0.1.1"
+  sha256 "627039cdbc0f76740df7fdb6f3413e6517bb37f9730182c6cfcf164541bf3fd7"
 
   class MinimumMacOSRequirement < Requirement
     fatal true
