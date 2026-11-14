@@ -24,6 +24,10 @@ driver-stop:
     sudo launchctl disable system/{{daemon}}
     sudo launchctl bootout system/{{daemon}}
 
+# Pin the driver cask and macos-input's client headers to upstream's latest release
+driver-update:
+    scripts/driver-update.sh
+
 # Clean-install the driver and macos-input exactly as users do, from GitHub main
 install-github: uninstall
     brew tap bdombro/virtual-hid

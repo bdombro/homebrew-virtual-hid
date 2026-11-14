@@ -78,6 +78,18 @@ driver's supported OS range instead of inheriting the build machine's SDK
 version. Building still needs a recent C++26 compiler. Older-OS runtime
 testing has not been performed.
 
+## Updating the driver
+
+```sh
+just driver-update
+```
+
+Pins the cask to upstream's latest release (version and package SHA-256) and
+`clients/macos-input/CMakeLists.txt` to that release's commit, so the CLI
+speaks the same protocol as the daemon. It lists docs that still mention the
+old version. Review upstream's changes and run `just test`, then release
+`macos-input` so its binary matches the new driver.
+
 ## Releases and changelog
 
 `clients/macos-input/VERSION` starts at `0.0.0`; the first minor release is `0.1.0`. CMake embeds

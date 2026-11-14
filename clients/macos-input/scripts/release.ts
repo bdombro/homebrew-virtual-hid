@@ -30,7 +30,7 @@ async function main(): Promise<void> {
   }
 
   const top = (await $`git rev-parse --show-toplevel`.quiet().text()).trim();
-  if (top !== root) throw new Error("Run releases from the independent macos-input repository.");
+  if (top !== root) throw new Error("Run releases from the homebrew-virtual-hid repository root.");
   await $`git rev-parse --verify HEAD`.quiet();
   const origin = (await $`git remote get-url origin`.quiet().text()).trim();
   if (![ `https://github.com/${releaseRepo}`, `https://github.com/${releaseRepo}.git`, `git@github.com:${releaseRepo}.git` ].includes(origin)) {
