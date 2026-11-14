@@ -50,6 +50,16 @@ uninstall:
     brew uninstall --cask virtual-hid-driver || true
     rm -rf "{{tap_dir}}"
 
+# Let the current user run live input without sudo (open a new terminal afterward)
+sudo-group-add:
+    sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
+    sudo dsmemberutil flushcache
+
+# Require sudo again for the current user's live input
+sudo-group-remove:
+    sudo dseditgroup -o edit -d "$USER" -t user virtual-hid
+    sudo dsmemberutil flushcache
+
 # Show driver activation state and whether the root daemon is loaded
 status:
     systemextensionsctl list | grep -i karabiner || echo "driver not activated: run the Manager activate command (no sudo), then approve in System Settings"

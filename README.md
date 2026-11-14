@@ -31,7 +31,9 @@ Homebrew owns the installed executable; Bun is only development/release tooling.
 
 - `just install-local`: clean-install the driver and macos-input from this checkout's cask/formula (CLI binary is the latest release)
 - `just install-github`: clean-install the driver and macos-input exactly as users do, from GitHub main
-- `just uninstall`: remove macos-input, the driver (and its daemon), and the tap
+- `just uninstall`: remove macos-input, the driver (and its daemon), and the tap; the `virtual-hid` group stays
+- `just sudo-group-add`: add yourself to the `virtual-hid` group so live input works without sudo
+- `just sudo-group-remove`: remove yourself from the group so live input needs sudo again
 - `just status`: show driver activation state and whether the root daemon is loaded
 - `just driver-start`: enable and start the driver daemon (persists across reboots)
 - `just driver-stop`: stop and disable the driver daemon so it stays off after reboot
