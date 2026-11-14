@@ -10,6 +10,7 @@ All notable changes are documented here, following
 
 - `macos-input sudoer grant` / `sudoer revoke` manage a passwordless sudo rule
   for `macos-input`, pinned to the binary's SHA-256. `just uninstall` removes it.
+  The formula caveats remind you to rerun `sudoer grant` after upgrading.
 
 ### Changed
 

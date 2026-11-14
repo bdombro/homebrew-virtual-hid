@@ -137,7 +137,7 @@ macos-input --dry-run sudoer grant     # print the rule without changing anythin
 sudo macos-input sudoer revoke         # remove it
 ```
 
-This writes `/etc/sudoers.d/macos-input`, checked with `visudo` before it takes effect. You still type `sudo macos-input …`, but without a password. The rule is pinned to the binary's SHA-256 because Homebrew's directories are writable by your user: a plain rule would let any program running as you swap the file and get passwordless root. After `brew upgrade macos-input`, sudo asks for a password again until you rerun `sudo macos-input sudoer grant`. `just uninstall` removes the rule; `brew uninstall` alone does not.
+This writes `/etc/sudoers.d/macos-input`, checked with `visudo` before it takes effect. You still type `sudo macos-input …`, but without a password. The rule is pinned to the binary's SHA-256 because Homebrew's directories are writable by your user: a plain rule would let any program running as you swap the file and get passwordless root. After `brew upgrade macos-input`, sudo asks for a password again until you rerun `sudo macos-input sudoer grant`; the formula caveats remind you when a rule exists. `just uninstall` removes the rule; `brew uninstall` alone does not.
 
 ## Driver and permissions
 
