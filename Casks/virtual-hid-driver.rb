@@ -17,9 +17,17 @@ cask "virtual-hid-driver" do
   manager = "/Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager"
 
   postflight_steps do
-    # Activation may need user approval; caveats cover the manual path.
-    run "/Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager",
-        args: ["activate"], must_succeed: false
+    # Unprivileged steps run in Homebrew's sandbox, where the activation request never reaches macOS.
+    # A sudo step runs outside the sandbox; sudo -u drops back to the invoking user, as the request requires.
+    run "/usr/bin/sudo",
+        args:         [
+          "-u", "{{user}}", "--",
+          "/Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager",
+          "activate"
+        ],
+        sudo:         true,
+        must_succeed: false,
+        print_stdout: true
 
     write_file "com.github.bdombro.virtual-hid-driver.daemon.plist", <<~XML
       <?xml version="1.0" encoding="UTF-8"?>
@@ -49,7 +57,8 @@ cask "virtual-hid-driver" do
     run "/bin/launchctl",
         args:         ["bootout", "system/com.github.bdombro.virtual-hid-driver.daemon"],
         sudo:         true,
-        must_succeed: false
+        must_succeed: false,
+        print_stderr: false
     run "/bin/launchctl",
         args:         ["enable", "system/com.github.bdombro.virtual-hid-driver.daemon"],
         sudo:         true,

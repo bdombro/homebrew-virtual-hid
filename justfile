@@ -52,7 +52,7 @@ uninstall:
 
 # Show driver activation state and whether the root daemon is loaded
 status:
-    systemextensionsctl list | grep -i karabiner || true
+    systemextensionsctl list | grep -i karabiner || echo "driver not activated: run the Manager activate command (no sudo), then approve in System Settings"
     sudo launchctl print system/{{daemon}} | head -5
 
 # Enable and start the driver daemon (persists across reboots)
