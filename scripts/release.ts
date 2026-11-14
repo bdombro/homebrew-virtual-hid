@@ -1,6 +1,4 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { stdin, stdout } from "node:process";
-import { createInterface } from "node:readline/promises";
 import { join } from "node:path";
 import { $ } from "bun";
 import {
@@ -8,12 +6,12 @@ import {
   promoteChangelog, readBinaryTarget, readVersion, releaseFormulaUrl, releaseRepo, renderFormula, root,
 } from "./formula-shared.ts";
 
-export function parseOptions(args: string[]): { bump: Bump; yes: boolean; dryRun: boolean } {
+export function parseOptions(args: string[]): { bump: Bump; dryRun: boolean } {
   const bumps = args.filter((arg): arg is Bump => arg === "major" || arg === "minor" || arg === "patch");
-  if (bumps.length !== 1 || args.some((arg) => !["major", "minor", "patch", "--yes", "--dry-run"].includes(arg))) {
-    throw new Error("Usage: just release <major|minor|patch> [--yes] [--dry-run]");
+  if (bumps.length !== 1 || args.some((arg) => !["major", "minor", "patch", "--dry-run"].includes(arg))) {
+    throw new Error("Usage: just release <major|minor|patch> [--dry-run]");
   }
-  return { bump: bumps[0], yes: args.includes("--yes"), dryRun: args.includes("--dry-run") };
+  return { bump: bumps[0], dryRun: args.includes("--dry-run") };
 }
 
 async function main(): Promise<void> {
@@ -31,23 +29,9 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (!options.yes) {
-    if (!stdin.isTTY) throw new Error("Not a TTY; pass --yes to confirm publication.");
-    const prompt = createInterface({ input: stdin, output: stdout });
-    try {
-      if ((await prompt.question(`Release ${tag} to ${releaseRepo} (commit, tag, push, publish)? [y/N] `)).trim().toLowerCase() !== "y") {
-        console.log("Aborted.");
-        return;
-      }
-    } finally { prompt.close(); }
-  }
-
   const top = (await $`git rev-parse --show-toplevel`.quiet().text()).trim();
   if (top !== root) throw new Error("Run releases from the independent macos-input repository.");
   await $`git rev-parse --verify HEAD`.quiet();
-  if ((await $`git status --porcelain`.quiet().text()).trim()) {
-    throw new Error("Commit or stash app changes before releasing.");
-  }
   const origin = (await $`git remote get-url origin`.quiet().text()).trim();
   if (![ `https://github.com/${releaseRepo}`, `https://github.com/${releaseRepo}.git`, `git@github.com:${releaseRepo}.git` ].includes(origin)) {
     throw new Error(`origin must point to ${releaseRepo}.`);
@@ -72,7 +56,7 @@ async function main(): Promise<void> {
   const notesPath = join(root, "dist", "release-notes.md");
   writeFileSync(notesPath, notes);
 
-  await $`git add -- VERSION CHANGELOG.md ${`Formula/${key}.rb`}`;
+  await $`git add -A`;
   await $`git commit -m ${`chore: release ${tag}`}`;
   await $`git tag -a ${tag} -m ${tag}`;
   await $`git push --atomic origin ${`HEAD:refs/heads/${branch}`} ${`refs/tags/${tag}`}`;

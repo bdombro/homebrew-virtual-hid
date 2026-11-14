@@ -84,16 +84,15 @@ pointing to the public `bdombro/homebrew-virtual-hid` repository:
 ```sh
 just release minor --dry-run
 just release minor
-# Automation: just release patch --yes
 ```
 
-The dry-run is offline and changes nothing. A real release asks for confirmation
-(or requires `--yes` outside a terminal), requires a clean app working tree,
-checks the repository and tag, and runs the C++ tests. It bumps `VERSION`, promotes
-Unreleased to a dated changelog section, builds the binary, creates
-`dist/macos-input.zip`, and writes the release formula with its SHA-256.
-It commits only the version, changelog, and formula, then tags, atomically
-pushes the branch and tag, and publishes the zip using the changelog as notes.
+The dry-run is offline and changes nothing. A real release runs without a
+confirmation prompt: it checks the repository and tag, and runs the C++ tests. It
+bumps `VERSION`, promotes Unreleased to a dated changelog section, builds the
+binary, creates `dist/macos-input.zip`, and writes the release formula with its
+SHA-256. It stages every working-tree change (`git add -A`) into the release
+commit, then tags, atomically pushes the branch and tag, and publishes the zip
+using the changelog as notes.
 
 Requires authenticated `gh`, push access to `origin`, and an existing GitHub
 repository. This tooling does not create that repository. The checked-in release
