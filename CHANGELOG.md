@@ -18,6 +18,12 @@ All notable changes are documented here, following
 - New just recipes: `install-local`, `install-github`, `uninstall`, `status`,
   `driver-start`, `driver-stop` and `driver-restart`.
 - Installs no longer run tests automatically.
+
+### Fixed
+
+- Live input no longer times out after the first report ("Timed out waiting
+  for the driver daemon"), which left a key held down.
+- The virtual keyboard reports a US country code so macOS can identify it.
 - Migration: run `brew uninstall macos-input`, `brew trust bdombro/macos-input`
   (newer Homebrew refuses to touch casks from untrusted taps),
   `brew uninstall --cask karabiner-driverkit-virtualhiddevice`, then

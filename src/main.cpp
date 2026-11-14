@@ -92,23 +92,23 @@ public:
     Device(bool keyboard, bool pointing) : keyboard_(keyboard), pointing_(pointing) {
         client_ = std::make_unique<service::client>();
         client_->connected.connect([this] {
-            if (keyboard_)
-                client_->async_virtual_hid_keyboard_initialize({});
+            if (keyboard_) {
+                // A country code lets macOS identify the keyboard type, as in upstream's example.
+                service::virtual_hid_keyboard_parameters parameters;
+                parameters.set_country_code(pqrs::hid::country_code::us);
+                client_->async_virtual_hid_keyboard_initialize(parameters);
+            }
             if (pointing_)
                 client_->async_virtual_hid_pointing_initialize();
         });
         client_->virtual_hid_keyboard_ready.connect([this](bool ready) {
             std::lock_guard lock(mutex_);
             keyboard_ready_ = ready;
-            if (!pointing_)
-                ++responses_;
             changed_.notify_all();
         });
         client_->virtual_hid_pointing_ready.connect([this](bool ready) {
             std::lock_guard lock(mutex_);
             pointing_ready_ = ready;
-            if (pointing_)
-                ++responses_;
             changed_.notify_all();
         });
         client_->connect_failed.connect([this](const auto& error) { fail(error.message()); });
@@ -122,6 +122,9 @@ public:
         client_->async_start();
     }
 
+    // Reports are queued asynchronously; give the last ones time to reach the daemon.
+    ~Device() { std::this_thread::sleep_for(100ms); }
+
     void wait_ready() {
         std::unique_lock lock(mutex_);
         if (!changed_.wait_for(lock, 10s, [this] { return ready() || !error_.empty(); })) {
@@ -134,6 +137,7 @@ public:
         send(report);
         std::this_thread::sleep_for(50ms);
         send(hid::keyboard_input{});
+        std::this_thread::sleep_for(10ms);
     }
 
     void move(Delta delta) {
@@ -159,20 +163,13 @@ private:
         return (!keyboard_ || keyboard_ready_) && (!pointing_ || pointing_ready_);
     }
 
+    // The daemon doesn't acknowledge input reports, so posting is fire-and-forget.
     template <typename Report> void send(const Report& report) {
-        std::unique_lock lock(mutex_);
+        std::lock_guard lock(mutex_);
         check_error();
         if (!ready())
             throw std::runtime_error("Virtual input disconnected");
-        const auto previous = responses_;
         client_->async_post_report(report);
-        if (!changed_.wait_for(
-                lock, 5s, [this, previous] { return responses_ > previous || !error_.empty(); })) {
-            throw std::runtime_error("Timed out waiting for the driver daemon");
-        }
-        check_error();
-        if (!ready())
-            throw std::runtime_error("Virtual input disconnected");
     }
 
     Dispatcher dispatcher_;
@@ -182,7 +179,6 @@ private:
     const bool pointing_;
     bool keyboard_ready_ = false;
     bool pointing_ready_ = false;
-    uint64_t responses_ = 0;
     std::string error_;
     std::unique_ptr<service::client> client_;
 };
