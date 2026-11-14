@@ -94,14 +94,22 @@ cask "virtual-hid-driver" do
         sudo: true
   end
 
-  uninstall launchctl: daemon_label,
-            script:    {
+  uninstall early_script: {
+              executable:   "/usr/libexec/PlistBuddy",
+              args:         ["-c", "Delete :keyboardtype:10203-5824-33",
+                             "/Library/Preferences/com.apple.keyboardtype.plist"],
+              sudo:         true,
+              must_succeed: false,
+              print_stderr: false,
+            },
+            launchctl:    daemon_label,
+            script:       {
               executable: manager,
               args:       ["deactivate"],
               sudo:       false,
             },
-            pkgutil:   "^org\\.pqrs\\.Karabiner-DriverKit-VirtualHIDDevice$",
-            delete:    daemon_plist
+            pkgutil:      "^org\\.pqrs\\.Karabiner-DriverKit-VirtualHIDDevice$",
+            delete:       daemon_plist
 
   caveats <<~EOS
     Approve the driver when macOS prompts. If you clicked OK or the popup disappeared,

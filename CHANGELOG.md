@@ -6,6 +6,10 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+### Changed
+
+- Uninstalling `virtual-hid-driver` removes its keyboard-type registration.
+
 ## [0.1.0] - 2026-11-14
 
 ### Changed
