@@ -1,0 +1,33 @@
+set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
+
+_:
+    @just --list
+
+# Build Release and stage dist/macos-input
+build: (configure "Release")
+    cmake --build build/Release --target macos-input --parallel 2
+    mkdir -p dist
+    install -m 755 build/Release/macos-input dist/macos-input
+
+configure configuration="Debug":
+    CXX="${CXX:-/usr/bin/clang++}" cmake -S . -B build/{{configuration}} -G Ninja \
+        -DCMAKE_BUILD_TYPE={{configuration}} \
+        -DENABLE_SANITIZERS={{if configuration == "Debug" { "ON" } else { "OFF" }}}
+
+# Bump VERSION, build, publish the GitHub release and update Formula/macos-input.rb
+release *ARGS:
+    bun scripts/release.ts {{ARGS}}
+
+# Install the release tooling's Bun dependencies
+setup:
+    bun install
+
+test: test-debug test-release
+
+test-debug: (configure "Debug")
+    cmake --build build/Debug --parallel 2
+    ctest --test-dir build/Debug --output-on-failure --no-tests=error
+
+test-release: (configure "Release")
+    cmake --build build/Release --parallel 2
+    ctest --test-dir build/Release --output-on-failure --no-tests=error

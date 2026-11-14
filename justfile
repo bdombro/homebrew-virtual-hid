@@ -6,15 +6,9 @@ daemon := "com.github.bdombro.virtual-hid-driver.daemon"
 _:
     @just --list
 
-build: (configure "Release")
-    cmake --build build/cmake/Release --target macos-input --parallel 2
-    mkdir -p dist
-    install -m 755 build/cmake/Release/macos-input dist/macos-input
-
-configure configuration="Debug":
-    CXX="${CXX:-/usr/bin/clang++}" cmake -S . -B build/cmake/{{configuration}} -G Ninja \
-        -DCMAKE_BUILD_TYPE={{configuration}} \
-        -DENABLE_SANITIZERS={{if configuration == "Debug" { "ON" } else { "OFF" }}}
+# Build and stage clients/macos-input/dist/macos-input
+build:
+    just clients/macos-input/build
 
 # Restart the driver daemon
 driver-restart:
@@ -45,11 +39,13 @@ install-local: uninstall
     brew install --cask virtual-hid-driver
     brew install macos-input
 
+# Release macos-input (see docs/distribution.md)
 release *ARGS:
-    bun scripts/release.ts {{ARGS}}
+    just clients/macos-input/release {{ARGS}}
 
+# Install the release tooling's Bun dependencies
 setup:
-    bun install
+    just clients/macos-input/setup
 
 # Show driver activation state and whether the root daemon is loaded
 status:
@@ -66,15 +62,9 @@ sudo-group-remove:
     sudo dseditgroup -o edit -d "$USER" -t user virtual-hid
     sudo dsmemberutil flushcache
 
-test: test-debug test-release
-
-test-debug: (configure "Debug")
-    cmake --build build/cmake/Debug --parallel 2
-    ctest --test-dir build/cmake/Debug --output-on-failure --no-tests=error
-
-test-release: (configure "Release")
-    cmake --build build/cmake/Release --parallel 2
-    ctest --test-dir build/cmake/Release --output-on-failure --no-tests=error
+# Run macos-input's Debug and Release tests
+test:
+    just clients/macos-input/test
 
 # Remove macos-input, the driver (and its daemon), and the tap; the virtual-hid group stays
 uninstall:

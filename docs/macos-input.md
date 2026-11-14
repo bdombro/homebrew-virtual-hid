@@ -51,10 +51,12 @@ All movement goes through the driver. CoreGraphics only reads cursor and display
 Targets macOS 13 Ventura or newer. Building requires CMake 3.31+, Ninja, just, Bun and a recent Xcode command-line compiler with C++26 support. Build and install as your normal user, never with sudo.
 
 ```sh
-just setup
+cd clients/macos-input
 just test
 just build    # stages dist/macos-input
 ```
+
+From the repository root, `just test` and `just build` do the same. Run `just setup` once to install the release tooling's Bun dependencies.
 
 The build follows the sibling tool-env app's layout and just recipes: C++26 with Clang/libc++, warnings, FAST hardening, sanitizers in Debug and LTO in Release. It's macOS-only and uses no vcpkg packages.
 
@@ -65,13 +67,18 @@ See [distribution](distribution.md) for local Homebrew installs, just recipes an
 ### Layout
 
 ```text
-clients/macos-input/src/main.cpp            CLI, virtual devices and cursor-feedback movement
-clients/macos-input/src/mouse.hpp           movement parsing, geometry and interpolation
-clients/macos-input/tests/cli.sh, mouse.cpp  no-input CLI and mouse tests
-CMakeLists.txt, justfile                    Debug/Release builds, tests and explicit installation
-VERSION, CHANGELOG.md                       application version and release notes
-scripts/, Formula/, Casks/                  Homebrew CLI formula, driver cask and release tooling
-dist/                                       ignored compiled executable and release zip
-resources/driver-setup.txt                  driver setup guide shared by the CLI and formula
-build/cmake/{Debug,Release}                 ignored build output and pinned dependency checkout
+clients/macos-input/
+  CMakeLists.txt                Debug/Release builds and tests
+  VERSION                       release version, embedded in --version
+  src/main.cpp                  CLI, virtual devices and cursor-feedback movement
+  src/mouse.hpp                 movement parsing, geometry and interpolation
+  tests/cli.sh, mouse.cpp       no-input CLI and mouse tests
+  CHANGELOG.md                  release notes
+  justfile                      configure, build and test recipes
+  resources/driver-setup.txt    driver setup guide shared by the CLI and formula
+  scripts/, package.json        release and formula tooling (Bun)
+  dist/                         ignored compiled executable and release zip
+  build/{Debug,Release}         ignored build output and pinned dependency checkout
+justfile                        tap recipes: install, driver daemon, group access; delegates build, test, release
+Formula/, Casks/                Homebrew formula and driver cask (must stay at the root)
 ```

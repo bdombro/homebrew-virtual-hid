@@ -6,8 +6,9 @@ import { $ } from "bun";
 export const key = "macos-input";
 export const releaseRepo = "bdombro/homebrew-virtual-hid";
 export const managerAppPath = "/Applications/.Karabiner-VirtualHIDDevice-Manager.app";
-export const root = join(import.meta.dir, "..");
-export const binaryPath = join(root, "dist", key);
+export const clientDir = join(import.meta.dir, "..");
+export const root = join(clientDir, "..", "..");
+export const binaryPath = join(clientDir, "dist", key);
 export const formulaPath = join(root, "Formula", `${key}.rb`);
 
 export function errorMessage(error: unknown): string {
@@ -24,7 +25,7 @@ export interface BinaryTarget {
 }
 
 export function readVersion(): string {
-  const version = readFileSync(join(root, "VERSION"), "utf8").trim();
+  const version = readFileSync(join(clientDir, "VERSION"), "utf8").trim();
   if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version)) {
     throw new Error("VERSION must contain a major.minor.patch version.");
   }
@@ -68,7 +69,7 @@ export async function buildReleaseArchive(path: string): Promise<{ archivePath: 
 }
 
 export function renderFormula(version: string, url: string, sha256: string, target: BinaryTarget): string {
-  const setupInstructions = readFileSync(join(root, "resources", "driver-setup.txt"), "utf8")
+  const setupInstructions = readFileSync(join(clientDir, "resources", "driver-setup.txt"), "utf8")
     .trimEnd().split("\n").map((line) => line ? `      ${line}` : "").join("\n");
   // JSON strings are valid Ruby literals; escape Ruby's interpolation separately.
   const quote = (value: string) => JSON.stringify(value).replaceAll("#{", "\\#{");

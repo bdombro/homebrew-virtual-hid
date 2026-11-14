@@ -7,6 +7,11 @@ type-checking or Bun tests.
 
 ## Local development
 
+The root justfile covers the tap: installs, the driver daemon, group access
+and releases. Its `build`, `test`, `release` and `setup` recipes delegate to
+`clients/macos-input/justfile`, which owns the CLI's build, tests and Bun
+release tooling (`clients/macos-input/scripts/`).
+
 ```sh
 just setup
 just test
@@ -19,7 +24,7 @@ just uninstall
 
 `install-local` links this checkout as the `bdombro/virtual-hid` tap and
 installs its cask and formula, but the formula downloads the latest released
-CLI binary, not `dist/`. `install-github` taps GitHub main exactly as users do.
+CLI binary, not a local build. `install-github` taps GitHub main exactly as users do.
 Both first run `uninstall`, which removes `macos-input`, the
 `virtual-hid-driver` cask and the tap directory
 `$(brew --repository)/Library/Taps/bdombro/homebrew-virtual-hid` (a symlink for
@@ -48,7 +53,7 @@ brew install macos-input
 brew upgrade macos-input
 ```
 
-The formula is CLI-only. Its caveats print `resources/driver-setup.txt` only
+The formula is CLI-only. Its caveats print `clients/macos-input/resources/driver-setup.txt` only
 while the Manager app is missing; otherwise they print a reminder that live
 input needs sudo or membership in the `virtual-hid` group.
 
@@ -75,9 +80,9 @@ testing has not been performed.
 
 ## Releases and changelog
 
-`VERSION` starts at `0.0.0`; the first minor release is `0.1.0`. CMake embeds
+`clients/macos-input/VERSION` starts at `0.0.0`; the first minor release is `0.1.0`. CMake embeds
 it in `macos-input --version`. Write user-facing changes under
-`## [Unreleased]` in `CHANGELOG.md`.
+`## [Unreleased]` in `clients/macos-input/CHANGELOG.md`.
 
 Once the independent app repository has an initial commit and an `origin`
 pointing to the public `bdombro/homebrew-virtual-hid` repository:
@@ -90,7 +95,7 @@ just release minor
 The dry-run is offline and changes nothing. A real release runs without a
 confirmation prompt: it checks the repository and tag, and runs the C++ tests. It
 bumps `VERSION`, promotes Unreleased to a dated changelog section, builds the
-binary, creates `dist/macos-input.zip`, and writes the release formula with its
+binary, creates `clients/macos-input/dist/macos-input.zip`, and writes the release formula with its
 SHA-256. It stages every working-tree change (`git add -A`) into the release
 commit, then tags, atomically pushes the branch and tag, and publishes the zip
 using the changelog as notes.

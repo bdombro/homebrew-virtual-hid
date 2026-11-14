@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { $ } from "bun";
 import {
   applyBump, binaryPath, buildReleaseArchive, type Bump, errorMessage, formulaPath, key,
-  promoteChangelog, readBinaryTarget, readVersion, releaseFormulaUrl, releaseRepo, renderFormula, root,
+  promoteChangelog, readBinaryTarget, readVersion, releaseFormulaUrl, releaseRepo, renderFormula, root, clientDir,
 } from "./formula-shared.ts";
 
 export function parseOptions(args: string[]): { bump: Bump; dryRun: boolean } {
@@ -20,7 +20,7 @@ async function main(): Promise<void> {
   const current = readVersion();
   const version = applyBump(current, options.bump);
   const tag = `v${version}`;
-  const changelogPath = join(root, "CHANGELOG.md");
+  const changelogPath = join(clientDir, "CHANGELOG.md");
   const { changelog, notes } = promoteChangelog(
     readFileSync(changelogPath, "utf8"), version, new Date().toISOString().slice(0, 10),
   );
@@ -46,14 +46,14 @@ async function main(): Promise<void> {
   await $`gh repo view ${releaseRepo} --json nameWithOwner`.quiet();
   await $`just test`;
 
-  writeFileSync(join(root, "VERSION"), `${version}\n`);
+  writeFileSync(join(clientDir, "VERSION"), `${version}\n`);
   writeFileSync(changelogPath, changelog);
   await $`just build`;
   const target = await readBinaryTarget(binaryPath);
   const { archivePath, sha256 } = await buildReleaseArchive(binaryPath);
   mkdirSync(join(root, "Formula"), { recursive: true });
   writeFileSync(formulaPath, renderFormula(version, releaseFormulaUrl(version), sha256, target));
-  const notesPath = join(root, "dist", "release-notes.md");
+  const notesPath = join(clientDir, "dist", "release-notes.md");
   writeFileSync(notesPath, notes);
 
   await $`git add -A`;

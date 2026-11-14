@@ -85,4 +85,4 @@ systemextensionsctl list | grep -i karabiner
 
 From a checkout, `just status` runs both checks. `just driver-start`, `just driver-stop` and `just driver-restart` control the daemon.
 
-The formula's caveats print the [setup guide](../resources/driver-setup.txt) while the driver is missing. Live commands without the driver exit nonzero and print the same guide. They never install, start or prompt for anything.
+The formula's caveats print the [setup guide](../clients/macos-input/resources/driver-setup.txt) while the driver is missing. Live commands without the driver exit nonzero and print the same guide. They never install, start or prompt for anything.
