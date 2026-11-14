@@ -6,6 +6,10 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-14
+
+- Update REadme
+
 ## [0.1.1] - 2026-11-14
 
 ### Added

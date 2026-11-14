@@ -2,7 +2,18 @@
 
 Press keys and move the mouse on macOS from the command line or a script. Like [ydotool](https://github.com/ReimuNotMoe/ydotool) for Linux.
 
-virtual-hid pairs a signed, Apple-notarized virtual keyboard and mouse driver ([Karabiner-DriverKit-VirtualHIDDevice](https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice)) with `macos-input`, a small CLI that drives it. macOS sees a real HID device, so input takes the same path as a physical keyboard and mouse.
+This repo hosts:
+
+1. Homebrew tap: virtual-hid
+2. A recipe for [Karabiner-DriverKit-VirtualHIDDevice](https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice), the popular OSS virtual-hid driver on macOS
+3. A recipe and source code for `macos-input`, a small CLI to drive the virtual keyboard and mouse
+
+
+## Why this exists
+
+Makes it easy to send REAL keyboard and mouse input on macOS. Other solutions (Quartz) only simulate input at a higher level, which does not behave exactly like a real keyboard and mouse.
+
+That, and having a simple CLI to drive it, makes automating fun.
 
 ## Install
 
@@ -23,6 +34,8 @@ brew install macos-input
 ## Usage
 
 Input goes to whichever app is focused.
+
+> Note: `sudo ` is required unless you have joined the `virtual-hid` group as described above.
 
 ### Keyboard
 
