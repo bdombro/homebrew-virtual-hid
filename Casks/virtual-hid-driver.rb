@@ -17,6 +17,22 @@ cask "virtual-hid-driver" do
   manager = "/Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager"
 
   postflight_steps do
+    # Sudo steps run in the unsandboxed parent, so print_stdout reliably reaches the terminal.
+    run "/bin/echo",
+        args:         [
+          "A macOS popup will ask you to allow the Karabiner VirtualHIDDevice driver. " \
+          "The install waits until you approve it in System Settings > General > " \
+          "Login Items & Extensions > Extensions (By Category > Driver Extensions).",
+        ],
+        sudo:         true,
+        must_succeed: false,
+        print_stdout: true
+    run "/usr/bin/sudo",
+        args:         ["-u", "{{user}}", "--", "/usr/bin/open",
+                       "x-apple.systempreferences:com.apple.LoginItems-Settings.extension"],
+        sudo:         true,
+        must_succeed: false
+
     # Unprivileged steps run in Homebrew's sandbox, where the activation request never reaches macOS.
     # A sudo step runs outside the sandbox; sudo -u drops back to the invoking user, as the request requires.
     run "/usr/bin/sudo",
