@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-14
+
 ### Fixed
 
 - Group join instructions now include `sudo dsmemberutil flushcache`; without
