@@ -1,7 +1,7 @@
 #include "driver_setup.hpp"
 #include "mouse.hpp"
-#include "sudoers.hpp"
 #include <CoreGraphics/CoreGraphics.h>
+#include <cerrno>
 #include <chrono>
 #include <condition_variable>
 #include <csignal>
@@ -320,8 +320,6 @@ int main(int argc, char** argv) {
                        "       macos-input [--dry-run] move relative|absolute|percent X Y "
                        "[--smooth SECONDS]\n"
                        "       macos-input [--dry-run] --stdin\n"
-                       "       macos-input [--dry-run] sudoer grant [--user NAME]\n"
-                       "       macos-input [--dry-run] sudoer revoke\n"
                        "       macos-input --version\n"
                        "Keys: lowercase letters/digits, cmd/ctrl/shift/alt/option modifiers,\n"
                        "enter, escape, backspace, tab, space, punctuation names and arrow keys.\n"
@@ -333,11 +331,8 @@ int main(int argc, char** argv) {
                        "after 5 seconds of correction; no native cursor-warp fallback.\n"
                        "--stdin: persistent devices; prints ready, then ok per command line.\n"
                        "--dry-run: validates syntax only; no root, driver, screen reads or input.\n"
-                       "Live input requires root, the virtual-hid-driver cask and its daemon.\n"
-                       "sudoer grant: run once with sudo so NAME (default: the sudo caller) can\n"
-                       "run sudo macos-input without a password. The rule is pinned to this\n"
-                       "build's SHA-256, so rerun it after upgrading. sudoer revoke removes it.\n"
-                       "--dry-run with either prints the change without root.\n";
+                       "Live input requires the virtual-hid-driver cask and its daemon, and\n"
+                       "either sudo or membership in the virtual-hid group.\n";
                 return 0;
             } else if (arg == "--dry-run") {
                 dry_run = true;
@@ -346,19 +341,6 @@ int main(int argc, char** argv) {
             } else {
                 args.push_back(arg);
             }
-        }
-        if (!from_stdin && !args.empty() && args.front() == "sudoer") {
-            if (args.size() >= 2 && args[1] == "grant") {
-                std::optional<std::string> user;
-                if (args.size() == 4 && args[2] == "--user")
-                    user = args[3];
-                else if (args.size() != 2)
-                    throw std::runtime_error("Usage: macos-input sudoer grant [--user NAME]");
-                return macos_input::sudoers::grant(user, dry_run);
-            }
-            if (args.size() == 2 && args[1] == "revoke")
-                return macos_input::sudoers::revoke(dry_run);
-            throw std::runtime_error("Usage: macos-input sudoer grant [--user NAME] | sudoer revoke");
         }
         if (from_stdin ? !args.empty() : args.empty()) {
             throw std::runtime_error("Supply a command or --stdin; see --help");
@@ -381,12 +363,14 @@ int main(int argc, char** argv) {
                           << driver_setup_text;
                 return 1;
             }
-            if (geteuid() != 0)
-                throw std::runtime_error("Run live input with sudo");
-            if (lstat("/Library/Application Support/org.pqrs/tmp/rootonly/"
-                      "karabiner_virtual_hid_device_service.sock",
-                      &status) ||
-                !S_ISSOCK(status.st_mode)) {
+            constexpr const char* socket_path = "/Library/Application Support/org.pqrs/tmp/rootonly/"
+                                                "karabiner_virtual_hid_device_service.sock";
+            if (access(socket_path, W_OK) != 0 && errno == EACCES)
+                throw std::runtime_error(
+                    "No access to the driver daemon socket. Run with sudo, or join the "
+                    "virtual-hid group and open a new terminal:\n"
+                    "  sudo dseditgroup -o edit -a \"$USER\" -t user virtual-hid");
+            if (lstat(socket_path, &status) || !S_ISSOCK(status.st_mode)) {
                 throw std::runtime_error(
                     "Driver daemon socket missing: the driver is not approved or its daemon "
                     "is not running.\nCheck: sudo launchctl print "

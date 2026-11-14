@@ -24,15 +24,10 @@ class MacosInput < Formula
 
   def caveats
     if File.exist?("/Applications/.Karabiner-VirtualHIDDevice-Manager.app")
-      return <<~EOS if File.exist?("/private/etc/sudoers.d/macos-input")
-        Live input uses sudo. Your passwordless rule is pinned to the previous build's hash,
-        so sudo asks for a password again until you refresh it:
-          sudo macos-input sudoer grant
-      EOS
-
       return <<~EOS
-        Live input talks to the root-only driver daemon, so use sudo: sudo macos-input key cmd+h
-        To skip the password prompt: sudo macos-input sudoer grant
+        Live input needs sudo, or membership in the virtual-hid group. To join it,
+        run this once, then open a new terminal:
+          sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
       EOS
     end
 
@@ -66,8 +61,9 @@ class MacosInput < Formula
       3. Check the daemon:
            sudo launchctl print system/com.github.bdombro.virtual-hid-driver.daemon
 
-      Live input commands require sudo, for example: sudo macos-input key cmd+h
-      To skip the password prompt: sudo macos-input sudoer grant
+      Live input needs sudo, or membership in the virtual-hid group. To join it,
+      run this once, then open a new terminal:
+        sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
       Signing/notarization is not a guarantee that software is harmless.
     EOS
   end

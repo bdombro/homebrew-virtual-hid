@@ -100,15 +100,10 @@ ${architecture}
 
   def caveats
     if File.exist?("${managerAppPath}")
-      return <<~EOS if File.exist?("/private/etc/sudoers.d/${key}")
-        Live input uses sudo. Your passwordless rule is pinned to the previous build's hash,
-        so sudo asks for a password again until you refresh it:
-          sudo macos-input sudoer grant
-      EOS
-
       return <<~EOS
-        Live input talks to the root-only driver daemon, so use sudo: sudo macos-input key cmd+h
-        To skip the password prompt: sudo macos-input sudoer grant
+        Live input needs sudo, or membership in the virtual-hid group. To join it,
+        run this once, then open a new terminal:
+          sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
       EOS
     end
 

@@ -27,6 +27,7 @@ Complete these steps in order as your normal user. Skip steps already done.
 3. Check the daemon:
      sudo launchctl print system/com.github.bdombro.virtual-hid-driver.daemon
 
-Live input commands require sudo, for example: sudo macos-input key cmd+h
-To skip the password prompt: sudo macos-input sudoer grant
+Live input needs sudo, or membership in the virtual-hid group. To join it,
+run this once, then open a new terminal:
+  sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
 Signing/notarization is not a guarantee that software is harmless.

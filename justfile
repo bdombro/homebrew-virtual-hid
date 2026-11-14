@@ -44,9 +44,8 @@ install-github: uninstall
     brew install --cask virtual-hid-driver
     brew install macos-input
 
-# Remove macos-input, its sudoers rule, the driver (and its daemon), and the tap
+# Remove macos-input, the driver (and its daemon), and the tap; the virtual-hid group stays
 uninstall:
-    if [ -e /private/etc/sudoers.d/macos-input ]; then sudo rm -f /private/etc/sudoers.d/macos-input; fi
     brew uninstall macos-input || true
     brew uninstall --cask virtual-hid-driver || true
     rm -rf "{{tap_dir}}"

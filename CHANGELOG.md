@@ -8,13 +8,17 @@ All notable changes are documented here, following
 
 ### Added
 
-- `macos-input sudoer grant` / `sudoer revoke` manage a passwordless sudo rule
-  for `macos-input`, pinned to the binary's SHA-256. `just uninstall` removes it.
-  The formula caveats remind you to rerun `sudoer grant` after upgrading.
+- Live input works without sudo for members of the `virtual-hid` group. The
+  cask creates the group empty and gives it write access to the driver
+  daemon's socket through an inherited ACL; uninstalling removes the ACL and
+  keeps the group. Join with
+  `sudo dseditgroup -o edit -a "$USER" -t user virtual-hid`.
 
 ### Changed
 
 - Uninstalling `virtual-hid-driver` removes its keyboard-type registration.
+- `macos-input` no longer requires root for live input; it fails with a hint
+  when it cannot reach the daemon socket.
 
 ## [0.1.0] - 2026-11-14
 

@@ -85,6 +85,23 @@ cask "virtual-hid-driver" do
         sudo:         true,
         must_succeed: false,
         print_stderr: false
+    # Members of the virtual-hid group may use the daemon without sudo. The daemon recreates its socket on
+    # each start and resets rootonly to 0700, but keeps ACLs, so the socket inherits group write access.
+    # The group starts empty; users opt in by joining it. Earlier virtual-hid entries are dropped first,
+    # highest index first, so reinstalls don't duplicate them.
+    run "/bin/sh",
+        args: [
+          "-c",
+          "set -e; /usr/sbin/dseditgroup -o read virtual-hid >/dev/null 2>&1 || " \
+          "/usr/sbin/dseditgroup -o create -r 'Virtual HID driver users' virtual-hid; " \
+          "/bin/mkdir -p \"$1\"; /bin/chmod 700 \"$1\"; " \
+          "for i in $(/bin/ls -led \"$1\" | /usr/bin/awk -F: '/ group:virtual-hid /{print $1+0}' | " \
+          "/usr/bin/sort -rn); do /bin/chmod -a# \"$i\" \"$1\"; done; " \
+          "/bin/chmod +a 'group:virtual-hid allow search' \"$1\"; " \
+          "/bin/chmod +a 'group:virtual-hid allow write,file_inherit,only_inherit' \"$1\"",
+          "sh", "/Library/Application Support/org.pqrs/tmp/rootonly"
+        ],
+        sudo: true
     run "/bin/launchctl",
         args:         ["enable", "system/com.github.bdombro.virtual-hid-driver.daemon"],
         sudo:         true,
@@ -92,6 +109,19 @@ cask "virtual-hid-driver" do
     run "/bin/launchctl",
         args: ["bootstrap", "system", "/Library/LaunchDaemons/com.github.bdombro.virtual-hid-driver.daemon.plist"],
         sudo: true
+  end
+
+  # The group is kept: upgrades reinstall the cask, and deleting it would drop its members.
+  uninstall_preflight_steps do
+    run "/bin/sh",
+        args:         [
+          "-c",
+          "for i in $(/bin/ls -led \"$1\" | /usr/bin/awk -F: '/ group:virtual-hid /{print $1+0}' | " \
+          "/usr/bin/sort -rn); do /bin/chmod -a# \"$i\" \"$1\"; done",
+          "sh", "/Library/Application Support/org.pqrs/tmp/rootonly"
+        ],
+        sudo:         true,
+        must_succeed: false
   end
 
   uninstall early_script: {
@@ -120,6 +150,9 @@ cask "virtual-hid-driver" do
 
     If no approval prompt appears, request activation as your normal user (no sudo):
       #{manager} activate
+
+    To use macos-input without sudo, join the virtual-hid group, then open a new terminal:
+      sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
 
     Check the daemon:
       sudo launchctl print system/#{daemon_label}

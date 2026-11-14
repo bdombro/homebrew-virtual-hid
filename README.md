@@ -19,7 +19,7 @@ Follows the sibling tool-env app's layout, just recipes, C++26 Clang/libc++, war
 
 ## Build and validate
 
-Targets macOS 13 Ventura or newer. Building requires CMake 3.31+, Ninja, just, Bun and a recent Xcode command-line compiler with C++26 support. Run builds and Homebrew installs as your normal user; only live input uses sudo.
+Targets macOS 13 Ventura or newer. Building requires CMake 3.31+, Ninja, just, Bun and a recent Xcode command-line compiler with C++26 support. Run builds and Homebrew installs as your normal user; live input needs sudo or membership in the `virtual-hid` group.
 
 ```sh
 just setup
@@ -106,11 +106,11 @@ The cask's uninstall directives stop its daemon, request deactivation and remove
 ```sh
 macos-input --version
 macos-input --dry-run key cmd+h
-sudo macos-input key cmd+h ctrl+shift+a enter
-sudo macos-input move relative 100 -50
-sudo macos-input move absolute 500 300
-sudo macos-input move percent 50 50 --smooth 0.5
-sudo macos-input --stdin
+macos-input key cmd+h ctrl+shift+a enter
+macos-input move relative 100 -50
+macos-input move absolute 500 300
+macos-input move percent 50 50 --smooth 0.5
+macos-input --stdin
 ```
 
 Keys: one lowercase letter, digit or named key, plus optional `cmd`, `ctrl`, `shift`, `alt`/`option`. Named keys: `enter`, `escape`, `backspace`, `tab`, `space`, `minus`, `equal`, `left-bracket`, `right-bracket`, `backslash`, `semicolon`, `quote`, `grave`, `comma`, `period`, `slash`, `delete`, `left`, `right`, `up`, `down`. Each chord presses then releases.
@@ -126,21 +126,20 @@ All emitted movement uses the driver. CoreGraphics only reads cursor/display geo
 
 `--stdin` keeps virtual devices alive until EOF/Ctrl+C, prints `ready`, and accepts one command per line (for example `key cmd+h` or `move percent 50 50`). It prints `ok` after each chord's press/release responses or completed move; this does not prove a foreground app handled the input. `--dry-run` validates syntax without root, driver, screen reads or input. Errors go to stderr and exit nonzero; Ctrl+C exits 130.
 
-### Using sudo without a password
+### Running without sudo
 
-Live input needs root because the driver daemon's socket is root-only. To skip the password prompt, grant yourself a passwordless sudo rule for `macos-input` only:
+Live input needs access to the driver daemon's socket, which is root-only by default. Run commands with `sudo`, or join the `virtual-hid` group once and open a new terminal:
 
 ```sh
-sudo macos-input sudoer grant          # rule for the user who ran sudo
-sudo macos-input sudoer grant --user NAME
-macos-input --dry-run sudoer grant     # print the rule without changing anything
-sudo macos-input sudoer revoke         # remove it
+sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
 ```
 
-This writes `/etc/sudoers.d/macos-input`, checked with `visudo` before it takes effect. You still type `sudo macos-input …`, but without a password. The rule is pinned to the binary's SHA-256 because Homebrew's directories are writable by your user: a plain rule would let any program running as you swap the file and get passwordless root. After `brew upgrade macos-input`, sudo asks for a password again until you rerun `sudo macos-input sudoer grant`; the formula caveats remind you when a rule exists. `just uninstall` removes the rule; `brew uninstall` alone does not.
+The cask creates the group empty and adds two ACL entries to `/Library/Application Support/org.pqrs/tmp/rootonly`: `search` on the folder, and inherited `write` for files created in it. The daemon recreates its socket there on every start, and the new socket inherits group write access. Members can drive the virtual keyboard and mouse, so add only accounts you trust with input control. The folder holds only this driver's socket; if another app ever puts its own sockets there, the group gets write access to them as well.
+
+To leave the group: `sudo dseditgroup -o edit -d "$USER" -t user virtual-hid`. Uninstalling the cask removes the ACL entries but keeps the group, because cask upgrades reinstall and would otherwise drop its members. To delete it: `sudo dseditgroup -o delete virtual-hid`.
 
 ## Driver and permissions
 
-Live operation needs the separately installed/approved [Karabiner-DriverKit-VirtualHIDDevice](https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice) driver and its running root daemon. The cask installs the package and owns the root daemon. Approval remains manual. Root is required by that daemon's socket-access policy, not by our build or app-launch code. No developer-certificate signing or launchd registration is required for this foreground client. Driver signing and system-extension approval remain separate requirements.
+Live operation needs the separately installed/approved [Karabiner-DriverKit-VirtualHIDDevice](https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice) driver and its running root daemon. The cask installs the package and owns the root daemon. Approval remains manual. Root, or the `virtual-hid` group, is required by that daemon's socket permissions, not by our build or app-launch code. No developer-certificate signing or launchd registration is required for this foreground client. Driver signing and system-extension approval remain separate requirements.
 
 Input affects whichever app is focused. Caller-side app checks are not an atomic focus lock. Idle-timer resets, auto-lock prevention and real pointer precision remain unverified until authorized testing with the driver.
