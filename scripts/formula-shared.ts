@@ -99,7 +99,9 @@ ${architecture}
   end
 
   def caveats
-    return "Live input commands require sudo." if File.exist?("${managerAppPath}")
+    if File.exist?("${managerAppPath}")
+      return "Live input talks to the root-only driver daemon, so use sudo: sudo macos-input key cmd+h"
+    end
 
     <<~'EOS'
 ${setupInstructions}

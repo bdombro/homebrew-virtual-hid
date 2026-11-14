@@ -50,10 +50,11 @@ brew install macos-input
 
 ### Migrating from the old tap
 
-If you installed from the old `bdombro/macos-input` tap, first uninstall the old formula and the old driver cask (this stops and removes the old daemon and deactivates the driver), then untap, then run the install block above. macOS may ask you to approve the driver again.
+If you installed from the old `bdombro/macos-input` tap, first uninstall the old formula, trust the old tap (newer Homebrew refuses to touch casks from untrusted taps) and uninstall the old driver cask (this stops and removes the old daemon and deactivates the driver), then untap, then run the install block above. macOS may ask you to approve the driver again.
 
 ```sh
 brew uninstall macos-input
+brew trust bdombro/macos-input
 brew uninstall --cask karabiner-driverkit-virtualhiddevice
 brew untap bdombro/macos-input
 ```

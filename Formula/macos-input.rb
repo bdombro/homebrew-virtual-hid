@@ -23,7 +23,9 @@ class MacosInput < Formula
   end
 
   def caveats
-    return "Live input commands require sudo." if File.exist?("/Applications/.Karabiner-VirtualHIDDevice-Manager.app")
+    if File.exist?("/Applications/.Karabiner-VirtualHIDDevice-Manager.app")
+      return "Live input talks to the root-only driver daemon, so use sudo: sudo macos-input key cmd+h"
+    end
 
     <<~'EOS'
       Live input requires Karabiner-DriverKit-VirtualHIDDevice v8.8.0,

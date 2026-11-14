@@ -18,7 +18,8 @@ All notable changes are documented here, following
 - New just recipes: `install-local`, `install-github`, `uninstall`, `status`,
   `driver-start`, `driver-stop` and `driver-restart`.
 - Installs no longer run tests automatically.
-- Migration: run `brew uninstall macos-input`,
+- Migration: run `brew uninstall macos-input`, `brew trust bdombro/macos-input`
+  (newer Homebrew refuses to touch casks from untrusted taps),
   `brew uninstall --cask karabiner-driverkit-virtualhiddevice`, then
   `brew untap bdombro/macos-input`, then the new install commands from the README.
 

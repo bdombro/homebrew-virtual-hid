@@ -45,8 +45,8 @@ brew upgrade macos-input
 ```
 
 The formula is CLI-only. Its caveats print `resources/driver-setup.txt` only
-while the Manager app is missing; otherwise they say "Live input commands
-require sudo."
+while the Manager app is missing; otherwise they print a one-line reminder that
+live input talks to the root-only driver daemon and needs sudo.
 
 The `virtual-hid-driver` cask installs upstream v8.8.0's signed and notarized
 package, requests activation, and installs and starts its own root
