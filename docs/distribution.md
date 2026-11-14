@@ -13,6 +13,7 @@ just test
 just install-local
 just install-github
 just status
+just sudo-group-add
 just uninstall
 ```
 
@@ -29,6 +30,9 @@ Both first run `uninstall`, which removes `macos-input`, the
 `com.github.bdombro.virtual-hid-driver.daemon` LaunchDaemon, `driver-stop`
 disables and boots it out, and `driver-restart` kickstarts it. `status` and the
 `driver-*` recipes run `sudo launchctl` and prompt for a password.
+`sudo-group-add` and `sudo-group-remove` add or remove the current user from
+the `virtual-hid` group and flush the membership cache; open a new terminal
+afterward. `uninstall` keeps the group.
 
 Installs never run tests; run `just test` or
 `brew test bdombro/virtual-hid/macos-input` explicitly. Never run builds or
@@ -45,20 +49,17 @@ brew upgrade macos-input
 ```
 
 The formula is CLI-only. Its caveats print `resources/driver-setup.txt` only
-while the Manager app is missing; otherwise they print a one-line reminder that
-live input talks to the root-only driver daemon and needs sudo.
+while the Manager app is missing; otherwise they print a reminder that live
+input needs sudo or membership in the `virtual-hid` group.
 
 The `virtual-hid-driver` cask installs upstream v8.8.0's signed and notarized
 package, requests activation, and installs and starts its own root
 LaunchDaemon `com.github.bdombro.virtual-hid-driver.daemon` (not a Homebrew service).
 Approval stays manual; see
-[driver setup](../README.md#driver-setup-required-for-live-input). The cask's
+[driver](driver.md). The cask's
 uninstall unloads that daemon, requests deactivation, removes the package files
 and deletes the plist. It conflicts with the `karabiner-elements` cask. Do not
 run `brew install --cask` with sudo.
-
-Migrating from the old tap: follow
-[Migrating from the old tap](../README.md#migrating-from-the-old-tap) in the README.
 
 Formulae use ordinary public GitHub downloads without a custom authenticated
 strategy. Archives contain only the executable. Architecture and minimum
