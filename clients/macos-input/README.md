@@ -1,6 +1,6 @@
 # macos-input
 
-A CLI client for the [virtual-hid driver](driver.md). It presses key chords and moves the mouse through the driver's virtual keyboard and mouse.
+A CLI client for the [virtual-hid driver](../../docs/driver.md). It presses key chords and moves the mouse through the driver's virtual keyboard and mouse.
 
 ```text
 macos-input [--dry-run] key CHORD [CHORD ...]
@@ -9,7 +9,7 @@ macos-input [--dry-run] --stdin
 macos-input --version
 ```
 
-Live input needs the `virtual-hid-driver` cask with its daemon running, and either sudo or membership in the `virtual-hid` group (see [Group access](driver.md#group-access)). Input affects whichever app is focused. Checking the front app before sending input isn't an atomic focus lock.
+Live input needs the `virtual-hid-driver` cask with its daemon running, and either sudo or membership in the `virtual-hid` group (see [Group access](../../docs/driver.md#group-access)). Input affects whichever app is focused. Checking the front app before sending input isn't an atomic focus lock.
 
 ## Keys
 
@@ -62,7 +62,7 @@ The build follows the sibling tool-env app's layout and just recipes: C++26 with
 
 CMake fetches upstream's client headers, bundled dependencies and a small Objective-C autorelease-pool shim at the reviewed v8.8.0 commit `212a0f660702e33a3874895c4db991061e68e0e2` (protocol 7). Upstream's driver, packaging and project build scripts are not built or run.
 
-See [distribution](distribution.md) for local Homebrew installs, just recipes and releases.
+See [distribution](../../docs/distribution.md) for local Homebrew installs, just recipes and releases.
 
 ### Layout
 

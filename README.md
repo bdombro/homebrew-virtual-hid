@@ -32,7 +32,7 @@ macos-input key cmd+space             # open Spotlight
 macos-input key ctrl+shift+a enter    # several chords in a row
 ```
 
-A chord is one key plus optional `cmd`, `ctrl`, `shift`, `alt`/`option`. Keys are lowercase letters, digits, arrows and names like `enter`, `escape`, `tab`, `space`; see the [full list](docs/macos-input.md#keys).
+A chord is one key plus optional `cmd`, `ctrl`, `shift`, `alt`/`option`. Keys are lowercase letters, digits, arrows and names like `enter`, `escape`, `tab`, `space`; see the [full list](clients/macos-input/README.md#keys).
 
 ### Mouse
 
@@ -55,6 +55,6 @@ Add `--dry-run` to any command to check its syntax without sending input.
 
 ## Docs
 
-- [macos-input](docs/macos-input.md): full CLI reference, behavior details and building from source
+- [macos-input](clients/macos-input/README.md): full CLI reference, behavior details and building from source
 - [Driver](docs/driver.md): what the cask installs, approval, the `virtual-hid` group, troubleshooting
 - [Distribution](docs/distribution.md): local installs, just recipes and releases
