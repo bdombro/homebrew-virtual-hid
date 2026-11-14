@@ -26,8 +26,9 @@ class MacosInput < Formula
     if File.exist?("/Applications/.Karabiner-VirtualHIDDevice-Manager.app")
       return <<~EOS
         Live input needs sudo, or membership in the virtual-hid group. To join it,
-        run this once, then open a new terminal:
+        run this once:
           sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
+          sudo dsmemberutil flushcache
       EOS
     end
 
@@ -62,8 +63,9 @@ class MacosInput < Formula
            sudo launchctl print system/com.github.bdombro.virtual-hid-driver.daemon
 
       Live input needs sudo, or membership in the virtual-hid group. To join it,
-      run this once, then open a new terminal:
+      run this once:
         sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
+        sudo dsmemberutil flushcache
       Signing/notarization is not a guarantee that software is harmless.
     EOS
   end

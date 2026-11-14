@@ -6,6 +6,11 @@ All notable changes are documented here, following
 
 ## [Unreleased]
 
+### Fixed
+
+- Group join instructions now include `sudo dsmemberutil flushcache`; without
+  it, macOS can keep denying socket access after joining the `virtual-hid` group.
+
 ## [0.1.2] - 2026-11-14
 
 - Update REadme

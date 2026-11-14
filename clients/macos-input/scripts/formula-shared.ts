@@ -103,8 +103,9 @@ ${architecture}
     if File.exist?("${managerAppPath}")
       return <<~EOS
         Live input needs sudo, or membership in the virtual-hid group. To join it,
-        run this once, then open a new terminal:
+        run this once:
           sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
+          sudo dsmemberutil flushcache
       EOS
     end
 

@@ -151,8 +151,9 @@ cask "virtual-hid-driver" do
     If no approval prompt appears, request activation as your normal user (no sudo):
       #{manager} activate
 
-    To use macos-input without sudo, join the virtual-hid group, then open a new terminal:
+    To use macos-input without sudo, join the virtual-hid group:
       sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
+      sudo dsmemberutil flushcache
 
     Check the daemon:
       sudo launchctl print system/#{daemon_label}

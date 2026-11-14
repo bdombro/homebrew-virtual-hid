@@ -25,10 +25,11 @@ brew install macos-input
 ```
 
 1. **Approve the driver** when macOS prompts. Missed it? Open System Settings > General > Login Items & Extensions > By Category > ⓘ next to Driver Extensions, and turn on `.Karabiner-VirtualHIDDevice-Manager.app`.
-2. **Skip sudo** by joining the `virtual-hid` group, then open a new terminal:
+2. **Skip sudo** by joining the `virtual-hid` group:
 
    ```sh
    sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
+   sudo dsmemberutil flushcache
    ```
 
 ## Usage

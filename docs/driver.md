@@ -44,10 +44,11 @@ If no prompt appeared, request activation as your logged-in user, without sudo:
 
 ## Group access
 
-Live input talks to the daemon's socket, `/Library/Application Support/org.pqrs/tmp/rootonly/karabiner_virtual_hid_device_service.sock`, which is root-only by default. Run `macos-input` with sudo, or join the `virtual-hid` group once and open a new terminal:
+Live input talks to the daemon's socket, `/Library/Application Support/org.pqrs/tmp/rootonly/karabiner_virtual_hid_device_service.sock`, which is root-only by default. Run `macos-input` with sudo, or join the `virtual-hid` group once:
 
 ```sh
 sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
+sudo dsmemberutil flushcache
 ```
 
 The cask creates the group empty and adds two ACL entries to the `rootonly` folder:
@@ -66,7 +67,7 @@ sudo dseditgroup -o edit -d "$USER" -t user virtual-hid
 sudo dsmemberutil flushcache
 ```
 
-macOS caches group membership; open a new terminal after joining or leaving.
+macOS caches group membership, so a stale answer can deny access after joining (or allow it after leaving) until `sudo dsmemberutil flushcache` runs.
 
 To delete the group:
 

@@ -36,8 +36,7 @@ Both first run `uninstall`, which removes `macos-input`, the
 disables and boots it out, and `driver-restart` kickstarts it. `status` and the
 `driver-*` recipes run `sudo launchctl` and prompt for a password.
 `sudo-group-add` and `sudo-group-remove` add or remove the current user from
-the `virtual-hid` group and flush the membership cache; open a new terminal
-afterward. `uninstall` keeps the group.
+the `virtual-hid` group and flush the membership cache. `uninstall` keeps the group.
 
 Installs never run tests; run `just test` or
 `brew test bdombro/virtual-hid/macos-input` explicitly. Never run builds or

@@ -368,8 +368,9 @@ int main(int argc, char** argv) {
             if (access(socket_path, W_OK) != 0 && errno == EACCES)
                 throw std::runtime_error(
                     "No access to the driver daemon socket. Run with sudo, or join the "
-                    "virtual-hid group and open a new terminal:\n"
-                    "  sudo dseditgroup -o edit -a \"$USER\" -t user virtual-hid");
+                    "virtual-hid group:\n"
+                    "  sudo dseditgroup -o edit -a \"$USER\" -t user virtual-hid\n"
+                    "  sudo dsmemberutil flushcache");
             if (lstat(socket_path, &status) || !S_ISSOCK(status.st_mode)) {
                 throw std::runtime_error(
                     "Driver daemon socket missing: the driver is not approved or its daemon "

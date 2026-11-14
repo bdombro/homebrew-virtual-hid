@@ -56,7 +56,7 @@ status:
     systemextensionsctl list | grep -i karabiner || echo "driver not activated: run the Manager activate command (no sudo), then approve in System Settings"
     sudo launchctl print system/{{daemon}} | head -5
 
-# Let the current user run live input without sudo (open a new terminal afterward)
+# Let the current user run live input without sudo
 sudo-group-add:
     sudo dseditgroup -o edit -a "$USER" -t user virtual-hid
     sudo dsmemberutil flushcache
