@@ -77,7 +77,7 @@ Complete these steps in order. Skip any steps you have already completed. `just 
    brew install --cask virtual-hid-driver
    ```
 
-2. **Approve the driver** when macOS prompts, or in System Settings > General > Login Items & Extensions > Driver Extensions. On older macOS versions, check Privacy & Security. Restart if requested. If no prompt appeared, request activation manually as your logged-in user, without sudo:
+2. **Approve the driver** when macOS prompts. If you clicked OK or the popup disappeared, open System Settings > General > Login Items & Extensions, click "By Category", click ⓘ next to "Driver Extensions", and turn on `.Karabiner-VirtualHIDDevice-Manager.app` (`org.pqrs.Karabiner-DriverKit-VirtualHIDDevice`). On older macOS versions, check Privacy & Security. Restart if requested. If no prompt appeared, request activation manually as your logged-in user, without sudo:
 
    ```sh
    /Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager activate

@@ -45,8 +45,10 @@ class MacosInput < Formula
 
          The cask installs the driver, requests activation and starts its daemon.
 
-      2. Approve the driver when macOS prompts, or open System Settings:
-           General > Login Items & Extensions > Driver Extensions
+      2. Approve the driver when macOS prompts. If you clicked OK or the popup
+         disappeared, open System Settings > General > Login Items & Extensions,
+         click "By Category", click the (i) next to "Driver Extensions", and turn on
+         .Karabiner-VirtualHIDDevice-Manager.app (org.pqrs.Karabiner-DriverKit-VirtualHIDDevice).
          On older macOS versions, check Privacy & Security. Restart if requested.
 
          If no approval prompt appeared, request activation manually, WITHOUT sudo:

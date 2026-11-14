@@ -20,9 +20,11 @@ cask "virtual-hid-driver" do
     # Sudo steps run in the unsandboxed parent, so print_stdout reliably reaches the terminal.
     run "/bin/echo",
         args:         [
-          "A macOS popup will ask you to allow the Karabiner VirtualHIDDevice driver. " \
-          "The install waits until you approve it in System Settings > General > " \
-          "Login Items & Extensions > Extensions (By Category > Driver Extensions).",
+          "A macOS popup will ask you to allow the Karabiner VirtualHIDDevice driver, " \
+          "and the install waits until you approve it. If you clicked OK or the popup disappeared, " \
+          "open System Settings > General > Login Items & Extensions, click \"By Category\", " \
+          "click the (i) next to \"Driver Extensions\", and turn on " \
+          ".Karabiner-VirtualHIDDevice-Manager.app (org.pqrs.Karabiner-DriverKit-VirtualHIDDevice).",
         ],
         sudo:         true,
         must_succeed: false,
@@ -94,9 +96,11 @@ cask "virtual-hid-driver" do
             delete:    daemon_plist
 
   caveats <<~EOS
-    Approve the driver when macOS prompts, or open System Settings:
-      General > Login Items & Extensions > Driver Extensions
-    Restart if requested.
+    Approve the driver when macOS prompts. If you clicked OK or the popup disappeared,
+    open System Settings > General > Login Items & Extensions, click "By Category",
+    click the (i) next to "Driver Extensions", and turn on
+    .Karabiner-VirtualHIDDevice-Manager.app (org.pqrs.Karabiner-DriverKit-VirtualHIDDevice).
+    On older macOS versions, check Privacy & Security. Restart if requested.
 
     If no approval prompt appears, request activation as your normal user (no sudo):
       #{manager} activate
