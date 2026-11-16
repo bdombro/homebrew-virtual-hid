@@ -77,10 +77,13 @@ if(BUILD_TESTING)
     find_package(slimr-test CONFIG REQUIRED)
     add_test(NAME cli COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/tests/cli.sh"
         "$<TARGET_FILE:macos-input>")
-    add_executable(mouse-test tests/mouse.cpp)
-    target_include_directories(mouse-test PRIVATE src)
-    target_link_libraries(mouse-test PRIVATE app_options)
-    set_target_properties(mouse-test PROPERTIES INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
-    add_test(NAME mouse COMMAND mouse-test)
+    add_executable(macos_input_test tests/test_main.cpp)
+    target_include_directories(macos_input_test PRIVATE src tests)
+    target_link_libraries(macos_input_test PRIVATE slimr::test app_options)
+    set_target_properties(macos_input_test PROPERTIES INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+    add_test(NAME mouse COMMAND macos_input_test)
     set_tests_properties(cli PROPERTIES TIMEOUT 20)
+    set_tests_properties(mouse PROPERTIES TIMEOUT 120
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        ENVIRONMENT "BUGSINK_DSN=;TMPDIR=${CMAKE_BINARY_DIR}")
 endif()

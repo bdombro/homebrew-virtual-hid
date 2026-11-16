@@ -2,7 +2,7 @@ set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 set positional-arguments
 
 formula := "macos-input"
-test_target := "mouse-test"
+test_target := "macos_input_test"
 platforms := "macos"
 required := "brew cmake gh git jq just ninja vcpkg"
 llvm := env("LLVM_BIN", `brew --prefix llvm@23` + "/bin")
