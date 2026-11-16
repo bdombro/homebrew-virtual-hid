@@ -26,10 +26,21 @@ if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     message(FATAL_ERROR "Clang/libc++ required")
 endif()
 add_library(app_options INTERFACE)
-target_compile_options(app_options INTERFACE
-    "$<$<COMPILE_LANGUAGE:CXX>:-stdlib=libc++>"
-    -ftrivial-auto-var-init=zero -Wall -Wextra -Wpedantic)
-target_link_options(app_options INTERFACE -stdlib=libc++)
+if(APPLE)
+    execute_process(COMMAND "${CMAKE_CXX_COMPILER}" -print-file-name=c++/libc++.a
+        OUTPUT_VARIABLE libcxx_a OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
+    cmake_path(NORMAL_PATH libcxx_a)
+    if(NOT EXISTS "${libcxx_a}")
+        message(FATAL_ERROR "Static libc++.a not found via ${CMAKE_CXX_COMPILER} (got '${libcxx_a}'); use llvm@23")
+    endif()
+    cmake_path(GET libcxx_a PARENT_PATH libcxx_dir)
+    target_compile_options(app_options INTERFACE
+        "$<$<COMPILE_LANGUAGE:CXX>:-stdlib=libc++>"
+        -ftrivial-auto-var-init=zero -Wall -Wextra -Wpedantic)
+    target_link_options(app_options INTERFACE
+        -nostdlib++ "${libcxx_dir}/libc++.a" "${libcxx_dir}/libc++abi.a"
+        -Wl,-exported_symbols_list,/dev/null)
+endif()
 target_compile_definitions(app_options INTERFACE
     _LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_FAST)
 if(ENABLE_SANITIZERS)

@@ -48,7 +48,7 @@ All movement goes through the driver. CoreGraphics only reads cursor and display
 
 ## Building from source
 
-Targets macOS 13 Ventura or newer. Building requires CMake 3.31+, Ninja, just, vcpkg (`VCPKG_ROOT` set), `llvm@23` (`LLVM_BIN` defaults to `$(brew --prefix llvm@23)/bin`), and a recent Xcode command-line compiler with C++26 support. Build and install as your normal user, never with sudo.
+Targets macOS 13 Ventura or newer. Building requires CMake 3.31+, Ninja, just, vcpkg (`VCPKG_ROOT` set), `llvm@23` (`LLVM_BIN` defaults to `$(brew --prefix llvm@23)/bin`), and Xcode Command Line Tools (`xcrun` SDK). Build and install as your normal user, never with sudo.
 
 ```sh
 just doctor
@@ -58,7 +58,7 @@ just build    # Release binary staged at build/bin/macos-input
 
 From the repository root, `just test` and `just build` do the same.
 
-The build uses C++26 with Apple Clang/libc++, FAST hardening, sanitizers in Debug and LTO in Release. It's macOS-only and uses `slimr-test` from vcpkg plus CMake `FetchContent` for upstream's client headers, bundled dependencies and a small Objective-C autorelease-pool shim at the reviewed v8.8.0 commit `212a0f660702e33a3874895c4db991061e68e0e2` (protocol 7). Upstream's driver, packaging and project build scripts are not built or run.
+The build uses C++26 with `llvm@23` Clang and static `libc++`, FAST hardening, sanitizers in Debug and LTO in Release. It's macOS-only and uses `slimr-test` from vcpkg plus CMake `FetchContent` for upstream's client headers, bundled dependencies and a small Objective-C autorelease-pool shim at the reviewed v8.8.0 commit `212a0f660702e33a3874895c4db991061e68e0e2` (protocol 7). Upstream's driver, packaging and project build scripts are not built or run.
 
 See [distribution](../../docs/distribution.md) for Homebrew installs, just recipes and releases.
 

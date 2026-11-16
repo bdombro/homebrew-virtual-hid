@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## Unreleased
 
+- Internal: switch macOS builds to llvm@23 with static libc++ and verify binary linkage/exports
+
 ## v0.1.4 - 2026-11-16
 
 - Driver setup instructions tap bdombro/virtual-hid by explicit URL and install the cask by its full name
