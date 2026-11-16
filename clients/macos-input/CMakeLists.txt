@@ -10,10 +10,11 @@ if(NOT CMAKE_OSX_SYSROOT)
         OUTPUT_VARIABLE CMAKE_OSX_SYSROOT OUTPUT_STRIP_TRAILING_WHITESPACE
         COMMAND_ERROR_IS_FATAL ANY)
 endif()
-file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" MACOS_INPUT_VERSION LIMIT_COUNT 1)
+file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/../../VERSION" MACOS_INPUT_VERSION LIMIT_COUNT 1)
+string(STRIP "${MACOS_INPUT_VERSION}" MACOS_INPUT_VERSION)
 project(macos_input VERSION "${MACOS_INPUT_VERSION}" LANGUAGES CXX OBJC)
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/VERSION")
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../VERSION")
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -68,9 +69,12 @@ target_include_directories(macos-input SYSTEM PRIVATE
 target_link_libraries(macos-input PRIVATE
     app_options "-framework Foundation" "-framework CoreGraphics" "-framework IOKit" objc
 )
-set_target_properties(macos-input PROPERTIES INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+set_target_properties(macos-input PROPERTIES
+    INTERPROCEDURAL_OPTIMIZATION_RELEASE ON
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/build/bin")
 install(TARGETS macos-input RUNTIME DESTINATION bin)
 if(BUILD_TESTING)
+    find_package(slimr-test CONFIG REQUIRED)
     add_test(NAME cli COMMAND bash "${CMAKE_CURRENT_SOURCE_DIR}/tests/cli.sh"
         "$<TARGET_FILE:macos-input>")
     add_executable(mouse-test tests/mouse.cpp)

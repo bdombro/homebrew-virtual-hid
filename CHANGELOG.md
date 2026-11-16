@@ -4,7 +4,9 @@ All notable changes are documented here, following
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and
 [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## Unreleased
+
+- Internal: align build, CI, Homebrew formula, and documentation with cpp-templates
 
 ## [0.1.3] - 2026-11-14
 

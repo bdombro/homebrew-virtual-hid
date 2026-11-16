@@ -1,0 +1,16 @@
+{
+  "default-registry": {
+    "kind": "builtin",
+    "baseline": "8f363bdc11359ede4bc51e5eb32a2617538049c8"
+  },
+  "registries": [
+    {
+      "kind": "git",
+      "baseline": "6b5d99b91c631687aeca740ea0848d471418015c",
+      "repository": "https://github.com/bdombro/slimr-test.git",
+      "packages": [
+        "slimr-test"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "name": "macos-input",
+  "description": "Send keyboard and mouse input through Karabiner's virtual HID driver",
+  "dependencies": [
+    "slimr-test"
+  ]
+}
