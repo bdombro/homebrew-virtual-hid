@@ -48,37 +48,35 @@ All movement goes through the driver. CoreGraphics only reads cursor and display
 
 ## Building from source
 
-Targets macOS 13 Ventura or newer. Building requires CMake 3.31+, Ninja, just, Bun and a recent Xcode command-line compiler with C++26 support. Build and install as your normal user, never with sudo.
+Targets macOS 13 Ventura or newer. Building requires CMake 3.31+, Ninja, just, vcpkg (`VCPKG_ROOT` set), `llvm@23` (`LLVM_BIN` defaults to `$(brew --prefix llvm@23)/bin`), and a recent Xcode command-line compiler with C++26 support. Build and install as your normal user, never with sudo.
 
 ```sh
-cd clients/macos-input
-just test
-just build    # stages dist/macos-input
+just doctor
+just test     # Debug build with ASan + UBSan
+just build    # Release binary staged at build/bin/macos-input
 ```
 
-From the repository root, `just test` and `just build` do the same. Run `just setup` once to install the release tooling's Bun dependencies.
+From the repository root, `just test` and `just build` do the same.
 
-The build follows the sibling tool-env app's layout and just recipes: C++26 with Clang/libc++, warnings, FAST hardening, sanitizers in Debug and LTO in Release. It's macOS-only and uses no vcpkg packages.
+The build uses C++26 with Apple Clang/libc++, FAST hardening, sanitizers in Debug and LTO in Release. It's macOS-only and uses `slimr-test` from vcpkg plus CMake `FetchContent` for upstream's client headers, bundled dependencies and a small Objective-C autorelease-pool shim at the reviewed v8.8.0 commit `212a0f660702e33a3874895c4db991061e68e0e2` (protocol 7). Upstream's driver, packaging and project build scripts are not built or run.
 
-CMake fetches upstream's client headers, bundled dependencies and a small Objective-C autorelease-pool shim at the reviewed v8.8.0 commit `212a0f660702e33a3874895c4db991061e68e0e2` (protocol 7). Upstream's driver, packaging and project build scripts are not built or run.
-
-See [distribution](../../docs/distribution.md) for local Homebrew installs, just recipes and releases.
+See [distribution](../../docs/distribution.md) for Homebrew installs, just recipes and releases.
 
 ### Layout
 
 ```text
 clients/macos-input/
   CMakeLists.txt                Debug/Release builds and tests
-  VERSION                       release version, embedded in --version
   src/main.cpp                  CLI, virtual devices and cursor-feedback movement
   src/mouse.hpp                 movement parsing, geometry and interpolation
-  tests/cli.sh, mouse.cpp       no-input CLI and mouse tests
-  CHANGELOG.md                  release notes
-  justfile                      configure, build and test recipes
+  tests/cli.sh, test_main.cpp   no-input CLI and doctest mouse tests
+  justfile                      configure, build, test, fmt, lint, doctor recipes
   resources/driver-setup.txt    driver setup guide shared by the CLI and formula
-  scripts/, package.json        release and formula tooling (Bun)
-  dist/                         ignored compiled executable and release zip
-  build/{Debug,Release}         ignored build output and pinned dependency checkout
+  vcpkg.json, triplets/         vcpkg manifest and overlay triplets
+  build/                        ignored build output, deps and staged Release binary
+VERSION                         release version, embedded in --version
+CHANGELOG.md                    release notes
 justfile                        tap recipes: install, driver daemon, group access; delegates build, test, release
+scripts/                        CI release scripts (release.ts, formula-shared.ts) and driver-update.sh
 Formula/, Casks/                Homebrew formula and driver cask (must stay at the root)
 ```

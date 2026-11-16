@@ -18,10 +18,9 @@ That, and having a simple CLI to drive it, makes automating fun.
 ## Install
 
 ```sh
-brew tap bdombro/virtual-hid
-brew trust bdombro/virtual-hid
-brew install --cask virtual-hid-driver
-brew install macos-input
+brew tap bdombro/virtual-hid https://github.com/bdombro/homebrew-virtual-hid
+brew install --cask bdombro/virtual-hid/virtual-hid-driver
+brew install bdombro/virtual-hid/macos-input
 ```
 
 1. **Approve the driver** when macOS prompts. Missed it? Open System Settings > General > Login Items & Extensions > By Category > ⓘ next to Driver Extensions, and turn on `.Karabiner-VirtualHIDDevice-Manager.app`.

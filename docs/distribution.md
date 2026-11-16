@@ -1,34 +1,34 @@
 # Homebrew distribution
 
-Adapted from argsbarg's Homebrew example: one repository owns `Formula/`, `Casks/`,
-local development installs, and GitHub release assets. The application remains
-C++/CMake; Bun runs maintainer scripts directly, without TypeScript
-type-checking or Bun tests.
+One repository owns `Formula/`, `Casks/`, `VERSION`, `CHANGELOG.md`, CI release
+workflows, and `clients/macos-input/`.
 
 ## Local development
 
 The root justfile covers the tap: installs, the driver daemon, group access
-and releases. Its `build`, `test`, `release` and `setup` recipes delegate to
-`clients/macos-input/justfile`, which owns the CLI's build, tests and Bun
-release tooling (`clients/macos-input/scripts/`).
+and releases. Its `build`, `clean`, `doctor`, `fmt`, `lint`, `test` and
+`upgrade-deps` recipes delegate to `clients/macos-input/justfile`.
 
 ```sh
-just setup
+just doctor
 just test
-just install-local
-just install-github
+just build
+just install
 just status
 just sudo-group-add
 just uninstall
 ```
 
-`install-local` links this checkout as the `bdombro/virtual-hid` tap and
-installs its cask and formula, but the formula downloads the latest released
-CLI binary, not a local build. `install-github` taps GitHub main exactly as users do.
-Both first run `uninstall`, which removes `macos-input`, the
-`virtual-hid-driver` cask and the tap directory
-`$(brew --repository)/Library/Taps/bdombro/homebrew-virtual-hid` (a symlink for
-`install-local`, a clone for `install-github`).
+`just install` runs `just uninstall`, taps `bdombro/virtual-hid` by explicit
+URL (`https://github.com/bdombro/homebrew-virtual-hid`), and installs the
+released cask and formula from GitHub exactly as users do. `just uninstall`
+removes `macos-input`, the `virtual-hid-driver` cask and untaps
+`bdombro/virtual-hid`.
+
+`just test` builds Debug with ASan + UBSan and runs the tests (pass an optional
+doctest filter to run matching cases). `just build` compiles Release and stages
+`build/bin/macos-input`. `just fmt` and `just lint` use `LLVM_BIN` (defaults to
+`$(brew --prefix llvm@23)/bin`).
 
 `status` shows driver activation state and whether the root daemon is loaded.
 `driver-start` enables and bootstraps the
@@ -45,10 +45,9 @@ Installs never run tests; run `just test` or
 ## Public installation
 
 ```sh
-brew tap bdombro/virtual-hid
-brew trust bdombro/virtual-hid
-brew install --cask virtual-hid-driver
-brew install macos-input
+brew tap bdombro/virtual-hid https://github.com/bdombro/homebrew-virtual-hid
+brew install --cask bdombro/virtual-hid/virtual-hid-driver
+brew install bdombro/virtual-hid/macos-input
 brew upgrade macos-input
 ```
 
@@ -89,32 +88,18 @@ that still mention the old version.
 
 ## Releases and changelog
 
-`clients/macos-input/VERSION` starts at `0.0.0`; the first minor release is `0.1.0`. CMake embeds
-it in `macos-input --version`. Write user-facing changes under
-`## [Unreleased]` in `clients/macos-input/CHANGELOG.md`.
+`VERSION` at the repository root embeds into `macos-input --version`. Write
+changes under `## Unreleased` in `CHANGELOG.md` (`Internal: ...` for internal
+changes).
 
-Once the independent app repository has an initial commit and an `origin`
-pointing to the public `bdombro/homebrew-virtual-hid` repository:
+Releases run via GitHub Actions:
 
 ```sh
-just release minor --dry-run
-just release minor
+just release <major|minor|patch>
 ```
 
-The dry-run is offline and changes nothing. A real release runs without a
-confirmation prompt: it checks the repository and tag, and runs the C++ tests. It
-bumps `VERSION`, promotes Unreleased to a dated changelog section, builds the
-binary, creates `clients/macos-input/dist/macos-input.zip`, and writes the release formula with its
-SHA-256. It stages every working-tree change (`git add -A`) into the release
-commit, then tags, atomically pushes the branch and tag, and publishes the zip
-using the changelog as notes.
-
-Requires authenticated `gh`, push access to `origin`, and an existing GitHub
-repository. This tooling does not create that repository. The checked-in release
-formula retains its published asset URL/hash when caveats
-change; new CLI code reaches public installations only with a new binary release.
-Old releases are retained.
-
-Failures stop immediately and leave completed work visible rather than
-silently rolling back or retrying publication. Inspect local Git and GitHub
-state before recovery, particularly if pushing or uploading failed.
+`just release` triggers `.github/workflows/release.yml`, watches the run, and
+pulls the release commit. The workflow runs `test.yml`, bumps `VERSION`,
+promotes `## Unreleased` in `CHANGELOG.md`, builds the macOS Release binary,
+packages `macos-input-arm64-macos.tar.gz`, updates `Formula/macos-input.rb`,
+commits, tags, pushes, and creates the GitHub release.
