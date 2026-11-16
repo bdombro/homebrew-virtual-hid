@@ -8,6 +8,7 @@ All notable changes are documented here, following
 
 - Driver setup instructions tap bdombro/virtual-hid by explicit URL and install the cask by its full name
 - Internal: align build, CI, Homebrew formula, and documentation with cpp-templates
+- Internal: resolve slimr-test from the `slimr-down-now` org
 
 ## [0.1.3] - 2026-11-14
 

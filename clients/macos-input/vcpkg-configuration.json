@@ -7,7 +7,7 @@
     {
       "kind": "git",
       "baseline": "6b5d99b91c631687aeca740ea0848d471418015c",
-      "repository": "https://github.com/bdombro/slimr-test.git",
+      "repository": "https://github.com/slimr-down-now/test.git",
       "packages": [
         "slimr-test"
       ]
