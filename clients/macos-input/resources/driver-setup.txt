@@ -7,11 +7,10 @@ Release: https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice/releas
 
 Complete these steps in order as your normal user. Skip steps already done.
 
-1. Tap and trust the repository, then install the driver cask
+1. Tap the repository, then install the driver cask
    (Homebrew will request administrator authentication):
-     brew tap bdombro/virtual-hid
-     brew trust bdombro/virtual-hid
-     brew install --cask virtual-hid-driver
+     brew tap bdombro/virtual-hid https://github.com/bdombro/homebrew-virtual-hid
+     brew install --cask bdombro/virtual-hid/virtual-hid-driver
 
    The cask installs the driver, requests activation and starts its daemon.
 
