@@ -3,7 +3,7 @@
 
 using namespace macos_input;
 
-void require(bool condition, const char* message) {
+void require(bool condition, const char *message) {
     if (!condition)
         throw std::runtime_error(message);
 }
@@ -50,7 +50,7 @@ int main() {
         }
         require(reached(current, target), "feedback compensates for pointer acceleration");
 
-        for (const auto& args : std::vector<std::vector<std::string>>{
+        for (const auto &args : std::vector<std::vector<std::string>>{
                  {"move", "percent", "101", "0"},
                  {"move", "percent", "-1", "0"},
                  {"move", "relative", "1.5", "0"},
@@ -71,13 +71,13 @@ int main() {
             bool rejected = false;
             try {
                 parse_move(args);
-            } catch (const std::runtime_error&) {
+            } catch (const std::runtime_error &) {
                 rejected = true;
             }
             require(rejected, "invalid movement accepted");
         }
         std::cout << "Mouse parsing, geometry, chunking and feedback tests passed without input.\n";
-    } catch (const std::exception& error) {
+    } catch (const std::exception &error) {
         std::cerr << error.what() << '\n';
         return 1;
     }

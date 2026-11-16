@@ -27,20 +27,14 @@ namespace {
 using namespace macos_input;
 volatile std::sig_atomic_t interrupted = 0;
 
-hid::keyboard_input parse_chord(const std::string& chord) {
+hid::keyboard_input parse_chord(const std::string &chord) {
     const std::map<std::string, hid::modifier> modifiers{{"cmd", hid::modifier::left_command},
                                                          {"ctrl", hid::modifier::left_control},
                                                          {"shift", hid::modifier::left_shift},
                                                          {"alt", hid::modifier::left_option},
                                                          {"option", hid::modifier::left_option}};
     const std::map<std::string, uint16_t> keys{
-        {"enter", 0x28},     {"escape", 0x29},       {"backspace", 0x2a},
-        {"tab", 0x2b},       {"space", 0x2c},        {"minus", 0x2d},
-        {"equal", 0x2e},     {"left-bracket", 0x2f}, {"right-bracket", 0x30},
-        {"backslash", 0x31}, {"semicolon", 0x33},    {"quote", 0x34},
-        {"grave", 0x35},     {"comma", 0x36},        {"period", 0x37},
-        {"slash", 0x38},     {"delete", 0x4c},       {"right", 0x4f},
-        {"left", 0x50},      {"down", 0x51},         {"up", 0x52}};
+        {"enter", 0x28}, {"escape", 0x29}, {"backspace", 0x2a}, {"tab", 0x2b}, {"space", 0x2c}, {"minus", 0x2d}, {"equal", 0x2e}, {"left-bracket", 0x2f}, {"right-bracket", 0x30}, {"backslash", 0x31}, {"semicolon", 0x33}, {"quote", 0x34}, {"grave", 0x35}, {"comma", 0x36}, {"period", 0x37}, {"slash", 0x38}, {"delete", 0x4c}, {"right", 0x4f}, {"left", 0x50}, {"down", 0x51}, {"up", 0x52}};
     hid::keyboard_input report;
     alignas(uint16_t) hid::keys pressed_keys;
     bool has_key = false;
@@ -89,7 +83,7 @@ struct Dispatcher {
 };
 
 class Device {
-public:
+  public:
     Device(bool keyboard, bool pointing) : keyboard_(keyboard), pointing_(pointing) {
         client_ = std::make_unique<service::client>();
         client_->connected.connect([this] {
@@ -112,9 +106,9 @@ public:
             pointing_ready_ = ready;
             changed_.notify_all();
         });
-        client_->connect_failed.connect([this](const auto& error) { fail(error.message()); });
-        client_->error_occurred.connect([this](const auto& error) { fail(error.message()); });
-        client_->warning_reported.connect([this](const auto& message) { fail(message); });
+        client_->connect_failed.connect([this](const auto &error) { fail(error.message()); });
+        client_->error_occurred.connect([this](const auto &error) { fail(error.message()); });
+        client_->warning_reported.connect([this](const auto &message) { fail(message); });
         client_->closed.connect([this] { fail("Driver daemon connection closed"); });
         client_->driver_version_mismatched.connect([this](bool mismatch) {
             if (mismatch)
@@ -134,7 +128,7 @@ public:
         check_error();
     }
 
-    void tap(const hid::keyboard_input& report) {
+    void tap(const hid::keyboard_input &report) {
         send(report);
         std::this_thread::sleep_for(50ms);
         send(hid::keyboard_input{});
@@ -148,8 +142,8 @@ public:
         send(report);
     }
 
-private:
-    void fail(const std::string& message) {
+  private:
+    void fail(const std::string &message) {
         std::lock_guard lock(mutex_);
         error_ = message;
         changed_.notify_all();
@@ -165,7 +159,8 @@ private:
     }
 
     // The daemon doesn't acknowledge input reports, so posting is fire-and-forget.
-    template <typename Report> void send(const Report& report) {
+    template <typename Report>
+    void send(const Report &report) {
         std::lock_guard lock(mutex_);
         check_error();
         if (!ready())
@@ -198,7 +193,7 @@ Command parse_command(std::vector<std::string> args) {
         args.erase(args.begin());
     if (args.empty())
         throw std::runtime_error("key needs a chord");
-    for (const auto& chord : args)
+    for (const auto &chord : args)
         parse_chord(chord);
     return {std::move(args), std::nullopt};
 }
@@ -232,7 +227,7 @@ void check_interrupted() {
         throw std::runtime_error("Interrupted");
 }
 
-void relative_move(Device& device, int64_t x, int64_t y) {
+void relative_move(Device &device, int64_t x, int64_t y) {
     while (x || y) {
         check_interrupted();
         const auto step = relative_step(x, y);
@@ -242,7 +237,7 @@ void relative_move(Device& device, int64_t x, int64_t y) {
     }
 }
 
-void move_pointer(Device& device, const Move& move) {
+void move_pointer(Device &device, const Move &move) {
     const auto began = std::chrono::steady_clock::now();
     const auto elapsed = [&] {
         return std::chrono::duration<double>(std::chrono::steady_clock::now() - began).count();
@@ -303,7 +298,7 @@ void move_pointer(Device& device, const Move& move) {
 }
 } // namespace
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     try {
         if (argc == 2 && std::string(argv[1]) == "--version") {
             std::cout << "macos-input " << MACOS_INPUT_VERSION << '\n';
@@ -363,7 +358,7 @@ int main(int argc, char** argv) {
                           << driver_setup_text;
                 return 1;
             }
-            constexpr const char* socket_path = "/Library/Application Support/org.pqrs/tmp/rootonly/"
+            constexpr const char *socket_path = "/Library/Application Support/org.pqrs/tmp/rootonly/"
                                                 "karabiner_virtual_hid_device_service.sock";
             if (access(socket_path, W_OK) != 0 && errno == EACCES)
                 throw std::runtime_error(
@@ -383,13 +378,13 @@ int main(int argc, char** argv) {
                                               from_stdin || command->move.has_value());
             device->wait_ready();
         }
-        const auto execute = [&](const Command& action) {
+        const auto execute = [&](const Command &action) {
             if (action.move) {
                 if (device)
                     move_pointer(*device, *action.move);
                 std::cout << (dry_run ? "validated move" : "ok") << std::endl;
             } else {
-                for (const auto& chord : action.chords) {
+                for (const auto &chord : action.chords) {
                     check_interrupted();
                     if (device)
                         device->tap(parse_chord(chord));
@@ -413,7 +408,7 @@ int main(int argc, char** argv) {
             execute(*command);
         }
         return interrupted ? 130 : 0;
-    } catch (const std::exception& error) {
+    } catch (const std::exception &error) {
         std::cerr << "macos-input: " << error.what() << '\n';
         return interrupted ? 130 : 1;
     }

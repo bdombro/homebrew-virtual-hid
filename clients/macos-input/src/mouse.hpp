@@ -1,7 +1,7 @@
 #pragma once
 #include <algorithm>
-#include <cerrno>
 #include <cctype>
+#include <cerrno>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
@@ -32,14 +32,16 @@ struct Delta {
     int x, y;
 };
 
-enum class Coordinates { relative, absolute, percent };
+enum class Coordinates { relative,
+                         absolute,
+                         percent };
 struct Move {
     Coordinates coordinates;
     Point position;
     double seconds = 0;
 };
 
-inline double number(const std::string& value) {
+inline double number(const std::string &value) {
     const bool invalid_syntax =
         value.empty() || value.front() == '+' ||
         std::isspace(static_cast<unsigned char>(value.front())) ||
@@ -47,7 +49,7 @@ inline double number(const std::string& value) {
     const auto locale = newlocale(LC_NUMERIC_MASK, "C", nullptr);
     if (!locale)
         throw std::runtime_error("Cannot initialize the numeric locale");
-    char* end = nullptr;
+    char *end = nullptr;
     errno = 0;
     const double result = strtod_l(value.c_str(), &end, locale);
     const int error = errno;
@@ -58,7 +60,7 @@ inline double number(const std::string& value) {
     return result;
 }
 
-inline Move parse_move(const std::vector<std::string>& args) {
+inline Move parse_move(const std::vector<std::string> &args) {
     if ((args.size() != 4 && args.size() != 6) || args[0] != "move")
         throw std::runtime_error("Use move relative|absolute|percent X Y [--smooth SECONDS]");
     Coordinates coordinates;
