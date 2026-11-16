@@ -6,6 +6,8 @@ All notable changes are documented here, following
 
 ## Unreleased
 
+## v0.1.5 - 2026-11-16
+
 - Internal: update vcpkg baselines
 - Internal: switch macOS builds to llvm@23 with static libc++ and verify binary linkage/exports
 
